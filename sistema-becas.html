@@ -1,0 +1,1756 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Sistema de Gestión de Becas</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600;700&family=Sora:wght@400;600;700;800&display=swap" rel="stylesheet">
+<style>
+:root {
+  --primary: #1E3A8A;
+  --primary-dark: #1e3270;
+  --primary-light: #3B5FCF;
+  --accent: #2563EB;
+  --accent2: #60A5FA;
+  --success: #10B981;
+  --warning: #F59E0B;
+  --danger: #EF4444;
+  --info: #6366F1;
+  --bg: #F0F4FF;
+  --surface: #FFFFFF;
+  --surface2: #F8FAFF;
+  --border: #E2E8F4;
+  --text: #0F172A;
+  --text2: #475569;
+  --text3: #94A3B8;
+  --sidebar-w: 220px;
+  --radius: 12px;
+  --shadow: 0 2px 16px rgba(30,58,138,0.08);
+  --shadow-lg: 0 8px 32px rgba(30,58,138,0.14);
+}
+*{box-sizing:border-box;margin:0;padding:0;}
+body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;}
+h1,h2,h3,h4{font-family:'Sora',sans-serif;}
+
+/* ── VIEWS ── */
+.view{display:none;}
+.view.active{display:flex;}
+
+/* ── LOGIN ── */
+#view-login{
+  position:fixed;inset:0;z-index:500;
+  background:linear-gradient(135deg,var(--primary) 0%,var(--primary-light) 60%,var(--accent2) 100%);
+  align-items:flex-start;justify-content:center;padding:40px 24px;overflow-y:auto;
+}
+.login-card{background:var(--surface);border-radius:20px;padding:48px 40px;width:100%;max-width:440px;box-shadow:var(--shadow-lg);}
+.login-icon{width:64px;height:64px;background:var(--primary);border-radius:50%;display:flex;align-items:center;justify-content:center;margin:0 auto 20px;}
+.login-icon svg{width:32px;height:32px;fill:white;}
+.login-card h2{text-align:center;font-size:1.7rem;color:var(--text);margin-bottom:4px;}
+.login-card p.sub{text-align:center;color:var(--text2);margin-bottom:28px;font-size:.95rem;}
+.field{margin-bottom:16px;}
+.field label{display:block;font-weight:600;font-size:.88rem;margin-bottom:6px;color:var(--text);}
+.field input,.field select,.field textarea{width:100%;padding:12px 14px;border:1.5px solid var(--border);border-radius:10px;font-size:.95rem;font-family:'DM Sans',sans-serif;outline:none;transition:border .2s;}
+.field input:focus,.field select:focus,.field textarea:focus{border-color:var(--accent);}
+.field textarea{resize:vertical;min-height:80px;}
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;padding:12px 22px;border-radius:10px;font-size:.95rem;font-weight:600;cursor:pointer;border:none;transition:all .2s;font-family:'DM Sans',sans-serif;}
+.btn-primary{background:var(--primary);color:white;}
+.btn-primary:hover{background:var(--primary-dark);transform:translateY(-1px);box-shadow:0 4px 16px rgba(30,58,138,0.25);}
+.btn-full{width:100%;}
+.btn-sm{padding:7px 14px;font-size:.83rem;}
+.btn-outline{background:transparent;border:1.5px solid var(--primary);color:var(--primary);}
+.btn-outline:hover{background:var(--primary);color:white;}
+.btn-success{background:var(--success);color:white;}
+.btn-danger{background:var(--danger);color:white;}
+.btn-warning{background:var(--warning);color:white;}
+.btn-info{background:var(--info);color:white;}
+.login-link{text-align:center;margin-top:16px;font-size:.9rem;color:var(--text2);}
+.login-link a{color:var(--accent);font-weight:600;cursor:pointer;text-decoration:none;}
+.login-link a:hover{text-decoration:underline;}
+.test-users{background:var(--bg);border-radius:10px;padding:14px 16px;margin-top:20px;font-size:.8rem;color:var(--text2);}
+.test-users strong{display:block;margin-bottom:6px;color:var(--text);}
+.test-users span{display:block;line-height:1.7;}
+.error-msg{color:var(--danger);font-size:.82rem;margin-top:4px;display:none;}
+.error-msg.show{display:block;}
+
+/* ── REGISTER ── */
+#view-register{
+  position:fixed;inset:0;z-index:500;
+  background:linear-gradient(135deg,var(--primary) 0%,var(--primary-light) 60%,var(--accent2) 100%);
+  align-items:flex-start;justify-content:center;padding:40px 24px;overflow-y:auto;
+}
+.register-card{background:var(--surface);border-radius:20px;padding:48px 40px;width:100%;max-width:500px;box-shadow:var(--shadow-lg);}
+.register-card h2{text-align:center;font-size:1.5rem;margin-bottom:4px;}
+.register-card p.sub{text-align:center;color:var(--text2);margin-bottom:24px;font-size:.93rem;}
+
+/* ── APP LAYOUT ── */
+#view-app{min-height:100vh;width:100%;}
+#view-app.active{display:flex;}
+.sidebar{width:var(--sidebar-w);background:var(--primary);min-height:100vh;display:flex;flex-direction:column;position:fixed;top:0;left:0;z-index:100;}
+.sidebar-brand{padding:20px 20px 16px;border-bottom:1px solid rgba(255,255,255,.1);}
+.sidebar-brand .brand-name{font-family:'Sora',sans-serif;font-size:1rem;font-weight:700;color:white;line-height:1.2;}
+.sidebar-brand .brand-sub{font-size:.75rem;color:rgba(255,255,255,.6);margin-top:2px;}
+.sidebar-nav{flex:1;padding:16px 0;}
+.nav-item{display:flex;align-items:center;gap:10px;padding:11px 20px;color:rgba(255,255,255,.7);cursor:pointer;font-size:.88rem;font-weight:500;transition:all .2s;border-left:3px solid transparent;}
+.nav-item:hover{background:rgba(255,255,255,.08);color:white;}
+.nav-item.active{background:rgba(255,255,255,.12);color:white;border-left-color:var(--accent2);}
+.nav-item svg{width:17px;height:17px;flex-shrink:0;}
+.sidebar-footer{padding:16px 20px;border-top:1px solid rgba(255,255,255,.1);}
+.sidebar-user{display:flex;align-items:center;gap:10px;margin-bottom:12px;}
+.user-avatar{width:34px;height:34px;border-radius:50%;background:rgba(255,255,255,.2);display:flex;align-items:center;justify-content:center;font-weight:700;font-size:.9rem;color:white;flex-shrink:0;}
+.user-info .name{font-size:.85rem;font-weight:600;color:white;}
+.user-info .role{font-size:.73rem;color:rgba(255,255,255,.6);}
+.logout-btn{display:flex;align-items:center;gap:8px;color:rgba(255,255,255,.7);cursor:pointer;font-size:.85rem;padding:6px 0;transition:color .2s;}
+.logout-btn:hover{color:white;}
+.logout-btn svg{width:16px;height:16px;}
+
+/* ── MAIN ── */
+.main-content{margin-left:var(--sidebar-w);flex:1;display:flex;flex-direction:column;min-height:100vh;}
+.topbar{background:white;border-bottom:1px solid var(--border);padding:0 28px;height:60px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:50;}
+.topbar-search{display:flex;align-items:center;gap:8px;background:var(--bg);border-radius:8px;padding:8px 14px;width:260px;}
+.topbar-search input{border:none;background:transparent;font-size:.88rem;outline:none;font-family:'DM Sans',sans-serif;width:100%;}
+.topbar-right{display:flex;align-items:center;gap:12px;}
+.notif-btn{position:relative;width:36px;height:36px;display:flex;align-items:center;justify-content:center;border-radius:8px;cursor:pointer;transition:background .2s;}
+.notif-btn:hover{background:var(--bg);}
+.notif-btn svg{width:20px;height:20px;color:var(--text2);}
+.notif-badge{position:absolute;top:4px;right:4px;width:16px;height:16px;background:var(--danger);border-radius:50%;font-size:.65rem;color:white;display:flex;align-items:center;justify-content:center;font-weight:700;}
+.topbar-avatar{width:36px;height:36px;border-radius:50%;background:var(--primary);display:flex;align-items:center;justify-content:center;font-weight:700;font-size:.88rem;color:white;cursor:pointer;}
+
+/* ── PAGES ── */
+.page{display:none;padding:28px;}
+.page.active{display:block;}
+.page-header{margin-bottom:24px;}
+.page-header h1{font-size:1.5rem;color:var(--text);}
+.page-header p{color:var(--text2);font-size:.9rem;margin-top:4px;}
+.page-header-row{display:flex;align-items:center;justify-content:space-between;margin-bottom:24px;}
+.page-header-row h1{font-size:1.5rem;}
+
+/* ── STATS ── */
+.stats-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:16px;margin-bottom:24px;}
+.stat-card{background:white;border-radius:var(--radius);padding:20px;box-shadow:var(--shadow);display:flex;align-items:center;gap:16px;}
+.stat-icon{width:44px;height:44px;border-radius:10px;display:flex;align-items:center;justify-content:center;flex-shrink:0;}
+.stat-icon svg{width:22px;height:22px;}
+.stat-icon.blue{background:#DBEAFE;color:var(--accent);}
+.stat-icon.green{background:#D1FAE5;color:var(--success);}
+.stat-icon.yellow{background:#FEF3C7;color:var(--warning);}
+.stat-icon.purple{background:#EDE9FE;color:var(--info);}
+.stat-icon.red{background:#FEE2E2;color:var(--danger);}
+.stat-val{font-size:1.6rem;font-weight:700;font-family:'Sora',sans-serif;color:var(--text);}
+.stat-label{font-size:.8rem;color:var(--text2);margin-top:2px;}
+
+/* ── CARDS GRID ── */
+.cards-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:16px;}
+.conv-card{background:white;border-radius:var(--radius);padding:20px;box-shadow:var(--shadow);display:flex;flex-direction:column;gap:10px;}
+.conv-card h3{font-size:.95rem;font-weight:600;color:var(--text);}
+.conv-card p{font-size:.83rem;color:var(--text2);line-height:1.5;}
+.conv-card .meta{display:flex;flex-direction:column;gap:5px;font-size:.8rem;color:var(--text2);}
+.conv-card .meta span{display:flex;align-items:center;gap:6px;}
+.conv-card .meta svg{width:13px;height:13px;flex-shrink:0;}
+.conv-card .actions{margin-top:4px;}
+.conv-card .reqs{font-size:.78rem;color:var(--text2);border-top:1px solid var(--border);padding-top:10px;}
+.conv-card .reqs strong{display:block;margin-bottom:4px;color:var(--text);}
+.conv-card .reqs li{list-style:disc;margin-left:14px;line-height:1.8;}
+
+/* ── BADGE ── */
+.badge{display:inline-flex;align-items:center;padding:3px 10px;border-radius:20px;font-size:.75rem;font-weight:600;}
+.badge-green{background:#D1FAE5;color:#065F46;}
+.badge-red{background:#FEE2E2;color:#991B1B;}
+.badge-yellow{background:#FEF3C7;color:#92400E;}
+.badge-blue{background:#DBEAFE;color:#1E40AF;}
+.badge-purple{background:#EDE9FE;color:#5B21B6;}
+.badge-gray{background:#F1F5F9;color:#475569;}
+
+/* ── TABLE ── */
+.table-wrap{background:white;border-radius:var(--radius);box-shadow:var(--shadow);overflow:hidden;}
+.table-header{padding:18px 20px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;}
+.table-header h3{font-size:1rem;font-weight:600;}
+table{width:100%;border-collapse:collapse;}
+th{background:var(--bg);padding:11px 16px;text-align:left;font-size:.8rem;font-weight:600;color:var(--text2);border-bottom:1px solid var(--border);}
+td{padding:13px 16px;font-size:.85rem;border-bottom:1px solid var(--border);color:var(--text);}
+tr:last-child td{border-bottom:none;}
+tr:hover td{background:var(--surface2);}
+
+/* ── SECTION HEADER ── */
+.section-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;}
+.section-header h2{font-size:1rem;font-weight:600;}
+.section-header a{font-size:.83rem;color:var(--accent);cursor:pointer;font-weight:500;}
+
+/* ── DASHBOARD TWO COL ── */
+.dash-two-col{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-top:20px;}
+
+/* ── SOLICITUD DETAIL ── */
+.sol-card{background:white;border-radius:var(--radius);padding:20px;box-shadow:var(--shadow);margin-bottom:14px;}
+.sol-card-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;}
+.sol-card h3{font-size:.95rem;font-weight:600;}
+.sol-meta{font-size:.82rem;color:var(--text2);display:flex;gap:14px;margin-bottom:12px;}
+.docs-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;}
+.doc-item{display:flex;align-items:center;gap:10px;padding:10px 12px;background:var(--bg);border-radius:8px;}
+.doc-item svg{width:18px;height:18px;color:var(--primary);flex-shrink:0;}
+.doc-name{font-size:.83rem;font-weight:500;}
+.doc-type{font-size:.75rem;color:var(--text3);}
+.info-banner{background:#EFF6FF;border:1px solid #BFDBFE;border-radius:10px;padding:14px 16px;font-size:.82rem;color:#1E40AF;line-height:1.8;margin-top:12px;}
+.info-banner li{margin-left:16px;}
+
+/* ── PROFILE ── */
+.profile-wrap{display:grid;grid-template-columns:260px 1fr;gap:20px;}
+.profile-left{background:white;border-radius:var(--radius);padding:24px;box-shadow:var(--shadow);text-align:center;}
+.profile-avatar-big{width:72px;height:72px;border-radius:50%;background:var(--primary);display:flex;align-items:center;justify-content:center;font-size:1.6rem;font-weight:700;color:white;margin:0 auto 12px;}
+.profile-left h3{font-weight:600;font-size:1rem;}
+.profile-left p{color:var(--text2);font-size:.85rem;margin-bottom:12px;}
+.profile-right{display:flex;flex-direction:column;gap:16px;}
+.info-section{background:white;border-radius:var(--radius);padding:20px;box-shadow:var(--shadow);}
+.info-section h3{font-size:.95rem;font-weight:600;margin-bottom:14px;padding-bottom:10px;border-bottom:1px solid var(--border);}
+.info-row{display:flex;align-items:center;gap:10px;padding:8px 0;border-bottom:1px solid var(--border);font-size:.85rem;}
+.info-row:last-child{border-bottom:none;}
+.info-row svg{width:16px;height:16px;color:var(--text3);flex-shrink:0;}
+.info-row .info-val{color:var(--text);}
+.info-row .info-key{color:var(--text2);width:130px;flex-shrink:0;}
+
+/* ── MODAL ── */
+.modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,.4);z-index:200;display:none;align-items:center;justify-content:center;padding:20px;}
+.modal-overlay.open{display:flex;}
+.modal{background:white;border-radius:16px;padding:28px;width:100%;max-width:520px;box-shadow:var(--shadow-lg);max-height:90vh;overflow-y:auto;}
+.modal h2{font-size:1.15rem;margin-bottom:18px;padding-bottom:12px;border-bottom:1px solid var(--border);}
+.modal-actions{display:flex;gap:10px;justify-content:flex-end;margin-top:20px;padding-top:16px;border-top:1px solid var(--border);}
+.two-col{display:grid;grid-template-columns:1fr 1fr;gap:12px;}
+.alert{padding:12px 14px;border-radius:8px;font-size:.85rem;margin-bottom:14px;}
+.alert-success{background:#D1FAE5;color:#065F46;}
+.alert-error{background:#FEE2E2;color:#991B1B;}
+
+/* ── EVAL FORM ── */
+.score-input{display:flex;align-items:center;gap:10px;}
+.score-input input{width:80px;text-align:center;}
+.score-hint{font-size:.78rem;color:var(--text3);}
+
+/* ── RANKING ── */
+.rank-row td:first-child{font-weight:700;color:var(--primary);}
+.rank-medal{width:26px;height:26px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:.8rem;font-weight:700;}
+.medal-1{background:#FEF3C7;color:#92400E;}
+.medal-2{background:#F1F5F9;color:#475569;}
+.medal-3{background:#FEE2E2;color:#991B1B;}
+
+/* ── UPLOAD ── */
+.upload-zone{border:2px dashed var(--border);border-radius:10px;padding:24px;text-align:center;cursor:pointer;transition:all .2s;}
+.upload-zone:hover{border-color:var(--accent);background:#EFF6FF;}
+.upload-zone svg{width:32px;height:32px;color:var(--text3);margin-bottom:8px;}
+.upload-zone p{font-size:.85rem;color:var(--text2);}
+
+/* ── NOTIFICATION ── */
+.toast{position:fixed;bottom:24px;right:24px;background:var(--text);color:white;padding:12px 20px;border-radius:10px;font-size:.88rem;font-weight:500;z-index:999;opacity:0;transform:translateY(10px);transition:all .3s;pointer-events:none;}
+.toast.show{opacity:1;transform:translateY(0);}
+.toast.success{background:var(--success);}
+.toast.error{background:var(--danger);}
+
+@media(max-width:900px){
+  .stats-grid{grid-template-columns:repeat(2,1fr);}
+  .cards-grid{grid-template-columns:1fr;}
+  .dash-two-col{grid-template-columns:1fr;}
+  .profile-wrap{grid-template-columns:1fr;}
+}
+</style>
+</head>
+<body>
+
+<!-- TOAST -->
+<div class="toast" id="toast"></div>
+
+<!-- ═══════════════════════ LOGIN ═══════════════════════ -->
+<div id="view-login" class="view active">
+  <div class="login-card">
+    <div class="login-icon">
+      <svg viewBox="0 0 24 24"><path d="M12 3L1 9l11 6 9-4.91V17h2V9L12 3zm0 13L3 11.09V17c0 3.31 4.03 6 9 6s9-2.69 9-6v-5.91L12 16z"/></svg>
+    </div>
+    <h2>Bienvenido</h2>
+    <p class="sub">Sistema de Gestión de Becas</p>
+    <div class="field">
+      <label>Correo electrónico</label>
+      <input type="email" id="login-email" placeholder="usuario@itm.edu">
+      <span class="error-msg" id="login-err"></span>
+    </div>
+    <div class="field">
+      <label>Contraseña</label>
+      <input type="password" id="login-pass" placeholder="••••••••">
+    </div>
+    <button class="btn btn-primary btn-full" onclick="doLogin()">Iniciar sesión</button>
+    <div class="login-link">¿No tienes cuenta? <a onclick="showView('view-register')">Regístrate aquí</a></div>
+    <div class="test-users">
+      <strong>Usuarios de prueba:</strong>
+      <span>Estudiante: estudiante@itm.edu / 123456</span>
+      <span>Evaluador: evaluador@itm.edu / 123456</span>
+      <span>Admin: admin@itm.edu / 123456</span>
+      <span>Tesorería: tesoreria@itm.edu / 123456</span>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════ REGISTRO ═══════════════════════ -->
+<div id="view-register" class="view">
+  <div class="register-card">
+    <div class="login-icon">
+      <svg viewBox="0 0 24 24" fill="white"><path d="M12 3L1 9l11 6 9-4.91V17h2V9L12 3zm0 13L3 11.09V17c0 3.31 4.03 6 9 6s9-2.69 9-6v-5.91L12 16z"/></svg>
+    </div>
+    <h2>Crear cuenta</h2>
+    <p class="sub">Ingresa tus datos para registrarte</p>
+    <div id="reg-alert" class="alert alert-success" style="display:none"></div>
+    <div class="field"><label>Nombre completo</label><input type="text" id="reg-name" placeholder="Tu nombre completo"></div>
+    <div class="field"><label>Correo institucional</label><input type="email" id="reg-email" placeholder="usuario@itm.edu"><span class="error-msg" id="reg-email-err"></span></div>
+    <div class="field"><label>Programa académico</label><input type="text" id="reg-programa" placeholder="Ej: Ingeniería de Sistemas"></div>
+    <div class="field"><label>Documento de identidad</label><input type="text" id="reg-doc" placeholder="Número de documento"></div>
+    <div class="field"><label>Contraseña</label><input type="password" id="reg-pass" placeholder="Mínimo 8 caracteres"><span class="error-msg" id="reg-pass-err"></span></div>
+    <div class="field"><label>Confirmar contraseña</label><input type="password" id="reg-pass2" placeholder="Repite tu contraseña"></div>
+    <button class="btn btn-primary btn-full" onclick="doRegister()">Registrarse</button>
+    <div class="login-link" style="margin-top:14px">¿Ya tienes cuenta? <a onclick="showView('view-login')">Inicia sesión</a></div>
+  </div>
+</div>
+
+<!-- ═══════════════════════ APP ═══════════════════════ -->
+<div id="view-app" class="view">
+  <aside class="sidebar">
+    <div class="sidebar-brand">
+      <div class="brand-name">Sistema de Becas</div>
+      <div class="brand-sub" id="sb-inst">ITM</div>
+    </div>
+    <nav class="sidebar-nav" id="sidebar-nav"></nav>
+    <div class="sidebar-footer">
+      <div class="sidebar-user">
+        <div class="user-avatar" id="sb-avatar">U</div>
+        <div class="user-info">
+          <div class="name" id="sb-name">Usuario</div>
+          <div class="role" id="sb-role">Rol</div>
+        </div>
+      </div>
+      <div class="logout-btn" onclick="doLogout()">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 21H5a2 2 0 01-2-2V5a2 2 0 012-2h4M16 17l5-5-5-5M21 12H9"/></svg>
+        Cerrar sesión
+      </div>
+    </div>
+  </aside>
+
+  <!-- MAIN -->
+  <div class="main-content">
+    <div class="topbar">
+      <div class="topbar-search">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#94A3B8" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
+        <input type="text" placeholder="Buscar...">
+      </div>
+      <div class="topbar-right">
+        <div class="notif-btn" onclick="showNotifModal()">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 8A6 6 0 006 8c0 7-3 9-3 9h18s-3-2-3-9M13.73 21a2 2 0 01-3.46 0"/></svg>
+          <span class="notif-badge" id="notif-count">2</span>
+        </div>
+        <div class="topbar-avatar" id="top-avatar">U</div>
+      </div>
+    </div>
+
+    <!-- PAGES -->
+    <div id="pages-container">
+
+      <!-- ── ESTUDIANTE: DASHBOARD ── -->
+      <div id="page-est-dashboard" class="page">
+        <div class="page-header"><h1 id="dash-welcome">Dashboard</h1><p>Bienvenido al sistema de becas</p></div>
+        <div class="stats-grid">
+          <div class="stat-card"><div class="stat-icon blue"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="3" width="20" height="14" rx="2"/><path d="M8 21h8M12 17v4"/></svg></div><div><div class="stat-val">3</div><div class="stat-label">Convocatorias abiertas</div></div></div>
+          <div class="stat-card"><div class="stat-icon yellow"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg></div><div><div class="stat-val">1</div><div class="stat-label">Solicitudes enviadas</div></div></div>
+          <div class="stat-card"><div class="stat-icon purple"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg></div><div><div class="stat-val">1</div><div class="stat-label">En revisión</div></div></div>
+          <div class="stat-card"><div class="stat-icon green"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2v20M17 5H9.5a3.5 3.5 0 000 7h5a3.5 3.5 0 010 7H6"/></svg></div><div><div class="stat-val">0</div><div class="stat-label">Aprobadas</div></div></div>
+        </div>
+        <div class="dash-two-col">
+          <div>
+            <div class="section-header"><h2>Convocatorias destacadas</h2><a onclick="showPage('page-est-convocatorias')">Ver todas</a></div>
+            <div class="table-wrap">
+              <table><thead><tr><th>Beca</th><th>Cierre</th><th>Estado</th></tr></thead><tbody>
+                <tr><td><strong>Beca de Excelencia Académica 2026</strong><br><small style="color:var(--text3)">$2,500,000</small></td><td>30/3/2026</td><td><span class="badge badge-green">Abierta</span></td></tr>
+                <tr><td><strong>Beca Apoyo Socioeconómico</strong><br><small style="color:var(--text3)">$1,800,000</small></td><td>14/4/2026</td><td><span class="badge badge-green">Abierta</span></td></tr>
+                <tr><td><strong>Beca Investigación Científica</strong><br><small style="color:var(--text3)">$3,000,000</small></td><td>10/5/2026</td><td><span class="badge badge-green">Abierta</span></td></tr>
+              </tbody></table>
+            </div>
+          </div>
+          <div>
+            <div class="section-header"><h2>Mis solicitudes</h2><a onclick="showPage('page-est-solicitudes')">Ver todas</a></div>
+            <div class="table-wrap">
+              <table><thead><tr><th>Beca</th><th>Estado</th></tr></thead><tbody>
+                <tr><td><strong>Beca de Excelencia Académica 2026</strong><br><small style="color:var(--text3)">Enviada: 14/2/2026</small></td><td><span class="badge badge-yellow">En revisión</span></td></tr>
+              </tbody></table>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ── ESTUDIANTE: CONVOCATORIAS ── -->
+      <div id="page-est-convocatorias" class="page">
+        <div class="page-header"><h1>Convocatorias</h1><p>Explora las convocatorias disponibles y aplica a las becas</p></div>
+        <div class="cards-grid">
+          <div class="conv-card">
+            <div style="display:flex;justify-content:space-between;align-items:flex-start"><h3>Beca de Excelencia Académica 2026</h3><span class="badge badge-green">Abierta</span></div>
+            <p>Beca dirigida a estudiantes con promedio superior a 4.5 en programas de pregrado.</p>
+            <div class="meta">
+              <span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2v20M17 5H9.5a3.5 3.5 0 000 7h5a3.5 3.5 0 010 7H6"/></svg><strong style="color:var(--success)">$2,500,000</strong></span>
+              <span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/></svg>Cierre: 30/3/2026</span>
+              <span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2M9 11a4 4 0 100-8 4 4 0 000 8z"/></svg>6 de 10 cupos disponibles</span>
+            </div>
+            <div class="reqs"><strong>Requisitos:</strong><ul><li>Promedio mínimo de 4.5</li><li>Certificado de notas</li><li>Carta de motivación</li></ul></div>
+            <div class="actions"><button class="btn btn-sm badge-gray" disabled style="cursor:default;border-radius:8px;padding:7px 14px;font-size:.83rem;font-weight:600">Ya postulado</button></div>
+          </div>
+          <div class="conv-card">
+            <div style="display:flex;justify-content:space-between;align-items:flex-start"><h3>Beca Apoyo Socioeconómico</h3><span class="badge badge-red">Vencida</span></div>
+            <p>Apoyo económico para estudiantes en situación de vulnerabilidad económica.</p>
+            <div class="meta">
+              <span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2v20M17 5H9.5a3.5 3.5 0 000 7h5a3.5 3.5 0 010 7H6"/></svg><strong style="color:var(--success)">$1,800,000</strong></span>
+              <span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/></svg>Vencida: 14/4/2026</span>
+              <span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2M9 11a4 4 0 100-8 4 4 0 000 8z"/></svg>12 de 15 cupos disponibles</span>
+            </div>
+            <div class="reqs"><strong>Requisitos:</strong><ul><li>Estrato nivel 1 y 2</li><li>Certificado de ingresos familiares</li><li>Documento de identidad</li></ul></div>
+            <div class="actions"><button class="btn btn-sm" style="background:#FEE2E2;color:#991B1B;border-radius:8px;padding:7px 14px;font-size:.83rem;font-weight:600;cursor:default">Convocatoria vencida</button></div>
+          </div>
+          <div class="conv-card">
+            <div style="display:flex;justify-content:space-between;align-items:flex-start"><h3>Beca Investigación Científica</h3><span class="badge badge-green">Abierta</span></div>
+            <p>Financiamiento para estudiantes que participen en proyectos de investigación.</p>
+            <div class="meta">
+              <span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2v20M17 5H9.5a3.5 3.5 0 000 7h5a3.5 3.5 0 010 7H6"/></svg><strong style="color:var(--success)">$3,000,000</strong></span>
+              <span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/></svg>Cierre: 10/5/2026</span>
+              <span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2M9 11a4 4 0 100-8 4 4 0 000 8z"/></svg>2 de 5 cupos disponibles</span>
+            </div>
+            <div class="reqs"><strong>Requisitos:</strong><ul><li>Proyecto de investigación aprobado</li><li>Aval del director de investigación</li><li>Hoja de vida académica</li></ul></div>
+            <div class="actions"><button class="btn btn-primary btn-sm" onclick="openPostularModal('Beca Investigación Científica')">Aplicar</button></div>
+          </div>
+          <div class="conv-card">
+            <div style="display:flex;justify-content:space-between;align-items:flex-start"><h3>Beca Deportiva</h3><span class="badge badge-gray">Cerrada</span></div>
+            <p>Apoyo para estudiantes deportistas destacados en competencias nacionales o internacionales.</p>
+            <div class="meta">
+              <span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2v20M17 5H9.5a3.5 3.5 0 000 7h5a3.5 3.5 0 010 7H6"/></svg><strong style="color:var(--success)">$1,500,000</strong></span>
+              <span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/></svg>Cerrada: 14/2/2026</span>
+            </div>
+            <div class="actions"><button class="btn btn-sm" style="background:#F1F5F9;color:#94A3B8;border-radius:8px;padding:7px 14px;font-size:.83rem;font-weight:600;cursor:default">No disponible</button></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ── ESTUDIANTE: DOCUMENTOS ── -->
+      <div id="page-est-documentos" class="page">
+        <div class="page-header"><h1>Documentos</h1><p>Gestiona y sube los documentos necesarios para tus solicitudes</p></div>
+        <div class="table-wrap">
+          <div class="table-header"><h3>Mis documentos</h3><button class="btn btn-primary btn-sm" onclick="openUploadModal()">+ Subir documento</button></div>
+          <table><thead><tr><th>Documento</th><th>Tipo</th><th>Fecha de carga</th><th>Estado</th><th>Acciones</th></tr></thead>
+          <tbody id="docs-table-body">
+            <tr><td><div style="display:flex;align-items:center;gap:8px"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--primary)" stroke-width="2"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>Documento de identidad</div></td><td>PDF</td><td>2026-01-15</td><td><span class="badge badge-green">Verificado</span></td><td><a style="color:var(--accent);font-size:.82rem;cursor:pointer">Ver documento</a></td></tr>
+            <tr><td><div style="display:flex;align-items:center;gap:8px"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--primary)" stroke-width="2"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>Certificado de notas</div></td><td>PDF</td><td>2026-02-15</td><td><span class="badge badge-green">Verificado</span></td><td><a style="color:var(--accent);font-size:.82rem;cursor:pointer">Ver documento</a></td></tr>
+            <tr><td><div style="display:flex;align-items:center;gap:8px"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--primary)" stroke-width="2"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>Carta de motivación</div></td><td>PDF</td><td>2026-02-15</td><td><span class="badge badge-green">Verificado</span></td><td><a style="color:var(--accent);font-size:.82rem;cursor:pointer">Ver documento</a></td></tr>
+            <tr><td><div style="display:flex;align-items:center;gap:8px"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--primary)" stroke-width="2"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>Certificado de ingresos</div></td><td>PDF</td><td>No Cargado</td><td><span class="badge badge-yellow">Pendiente</span></td><td><button class="btn btn-sm btn-outline" onclick="openUploadModal()">⬆ Subir archivo</button></td></tr>
+          </tbody></table>
+        </div>
+        <div class="info-banner" style="margin-top:16px">
+          <strong>Información importante:</strong>
+          <ul><li>Los documentos deben estar en formato PDF</li><li>El tamaño máximo por archivo es de 5 MB</li><li>Asegúrate de que los documentos sean legibles</li></ul>
+        </div>
+      </div>
+
+      <!-- ── ESTUDIANTE: SOLICITUDES ── -->
+      <div id="page-est-solicitudes" class="page">
+        <div class="page-header"><h1>Mis Solicitudes</h1><p>Revisa el estado de tus solicitudes de becas</p></div>
+        <div id="est-sol-container">
+          <div class="sol-card">
+            <div class="sol-card-header"><h3>Beca de Excelencia Académica 2026</h3><span class="badge badge-yellow">En revisión</span></div>
+            <div class="sol-meta"><span>📅 Enviada: 14/2/2026</span><span>📎 2 documentos</span></div>
+            <div class="docs-grid">
+              <div class="doc-item"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/></svg><div><div class="doc-name">Certificado de notas</div><div class="doc-type">PDF</div></div><span class="badge badge-green" style="margin-left:auto">Verificado</span></div>
+              <div class="doc-item"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/></svg><div><div class="doc-name">Carta de motivación</div><div class="doc-type">PDF</div></div><span class="badge badge-green" style="margin-left:auto">Verificado</span></div>
+            </div>
+            <div class="info-banner" style="margin-top:12px">Tu solicitud está siendo revisada por el equipo de evaluación.</div>
+          </div>
+        </div>
+        <div id="no-solicitudes" style="display:none;text-align:center;padding:40px;color:var(--text3)">No tiene solicitudes registradas</div>
+      </div>
+
+      <!-- ── ESTUDIANTE: PERFIL ── -->
+      <div id="page-est-perfil" class="page">
+        <div class="page-header"><h1>Perfil</h1><p>Información personal y académica</p></div>
+        <div class="profile-wrap">
+          <div class="profile-left">
+            <div class="profile-avatar-big" id="perfil-avatar">M</div>
+            <h3 id="perfil-name">María García</h3>
+            <p>Estudiante</p>
+            <button class="btn btn-outline btn-sm">Editar perfil</button>
+          </div>
+          <div class="profile-right">
+            <div class="info-section">
+              <h3>Información personal</h3>
+              <div class="info-row"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2M12 11a4 4 0 100-8 4 4 0 000 8z"/></svg><span class="info-key">Nombre completo</span><span class="info-val" id="perfil-fullname">María García</span></div>
+              <div class="info-row"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg><span class="info-key">Correo</span><span class="info-val" id="perfil-email">estudiante@itm.edu</span></div>
+              <div class="info-row"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 10v6M2 10l10-5 10 5-10 5z"/><path d="M6 12v5c3 3 9 3 12 0v-5"/></svg><span class="info-key">Programa</span><span class="info-val">Ingeniería de Sistemas</span></div>
+              <div class="info-row"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/></svg><span class="info-key">Documento</span><span class="info-val">12345678</span></div>
+            </div>
+            <div class="info-section">
+              <h3>Cambiar contraseña</h3>
+              <div class="field"><label>Contraseña actual</label><input type="password" placeholder="••••••••"></div>
+              <div class="field"><label>Nueva contraseña</label><input type="password" placeholder="••••••••"></div>
+              <div class="field"><label>Confirmar nueva contraseña</label><input type="password" placeholder="••••••••"></div>
+              <button class="btn btn-primary btn-sm" onclick="showToast('Contraseña actualizada correctamente','success')">Actualizar contraseña</button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ── EVALUADOR: DASHBOARD ── -->
+      <div id="page-eval-dashboard" class="page">
+        <div class="page-header"><h1>Dashboard de Evaluación</h1><p>Revisa y evalúa las solicitudes de becas</p></div>
+        <div class="stats-grid"></div>
+        <div class="table-wrap">
+          <div class="table-header"><h3>Solicitudes para evaluar</h3></div>
+          <table><thead><tr><th>Estudiante</th><th>Beca</th><th>Fecha de envío</th><th>Puntaje</th><th>Estado</th><th>Acciones</th></tr></thead>
+          <tbody></tbody></table>
+        </div>
+      </div>
+
+      <!-- ── EVALUADOR: SOLICITUDES ── -->
+      <div id="page-eval-solicitudes" class="page">
+        <div class="page-header"><h1>Solicitudes</h1><p>Gestiona y evalúa todas las solicitudes recibidas</p></div>
+        <div class="table-wrap">
+          <table><thead><tr><th>Estudiante</th><th>Beca</th><th>Fecha</th><th>Puntaje</th><th>Estado</th><th>Acción</th></tr></thead>
+          <tbody></tbody></table>
+        </div>
+      </div>
+
+      <!-- ── ADMIN: DASHBOARD ── -->
+      <div id="page-admin-dashboard" class="page">
+        <div class="page-header-row">
+          <div><h1>Panel de Administración</h1><p style="color:var(--text2);font-size:.9rem;margin-top:4px">Gestiona las convocatorias de becas</p></div>
+          <button class="btn btn-primary" onclick="openConvModal()">+ Nueva convocatoria</button>
+        </div>
+        <div class="stats-grid"></div>
+        <div class="table-wrap">
+          <div class="table-header"><h3>Convocatorias</h3></div>
+          <table><thead><tr><th>Título</th><th>Monto</th><th>Cupos</th><th>Fecha límite</th><th>Estado</th><th>Acciones</th></tr></thead>
+          <tbody id="admin-conv-table"></tbody></table>
+        </div>
+      </div>
+
+      <!-- ── ADMIN: RANKING ── -->
+      <div id="page-admin-ranking" class="page">
+        <div class="page-header-row">
+          <div><h1>Ranking de Beneficiarios</h1><p style="color:var(--text2);font-size:.9rem;margin-top:4px">Solicitudes ordenadas por puntaje</p></div>
+          <button class="btn btn-primary" onclick="confirmarBeneficiarios()">Confirmar selección</button>
+        </div>
+        <div class="table-wrap">
+          <table><thead><tr><th>#</th><th>Estudiante</th><th>Puntaje</th><th>Estado solicitud</th><th>Seleccionar</th></tr></thead>
+          <tbody></tbody></table>
+        </div>
+        <div class="info-banner" style="margin-top:16px">Solo se pueden seleccionar estudiantes con solicitudes evaluadas. El número de seleccionados no puede superar los cupos disponibles.</div>
+      </div>
+
+      <!-- ── TESORERÍA: DASHBOARD ── -->
+      <div id="page-tes-dashboard" class="page">
+        <div class="page-header"><h1>Dashboard de Tesorería</h1><p>Gestiona los desembolsos de becas</p></div>
+        <div class="stats-grid"></div>
+        <div class="table-wrap">
+          <div class="table-header"><h3>Desembolsos</h3></div>
+          <table><thead><tr><th>Estudiante</th><th>Beca</th><th>Monto</th><th>Cuenta bancaria</th><th>Estado</th><th>Acciones</th></tr></thead>
+          <tbody></tbody></table>
+        </div>
+        <div class="info-banner" style="margin-top:16px">
+          <strong>Información importante:</strong>
+          <ul><li>Verifica la información bancaria antes de confirmar el desembolso</li><li>Los desembolsos se procesan en 2-3 días hábiles</li><li>Mantén un registro de todos los comprobantes de pago</li></ul>
+        </div>
+      </div>
+
+      <!-- ── TESORERÍA: DESEMBOLSOS ── -->
+      <div id="page-tes-desembolsos" class="page">
+        <div class="page-header"><h1>Desembolsos</h1><p>Historial completo de desembolsos de becas</p></div>
+        <div class="table-wrap">
+          <table><thead><tr><th>Estudiante</th><th>Beca</th><th>Monto</th><th>Cuenta</th><th>N° Transacción</th><th>Fecha</th><th>Estado</th><th>Acción</th></tr></thead>
+          <tbody></tbody></table>
+        </div>
+      </div>
+
+    </div><!-- /pages-container -->
+  </div><!-- /main-content -->
+</div><!-- /view-app -->
+
+<!-- ══════════ MODALS ══════════ -->
+
+<!-- POSTULAR -->
+<div class="modal-overlay" id="modal-postular">
+  <div class="modal">
+    <h2>Postularse a beca</h2>
+    <p style="font-size:.88rem;color:var(--text2);margin-bottom:16px">Completa el formulario y adjunta los documentos requeridos.</p>
+    <div class="field"><label>Convocatoria</label><input type="text" id="postular-conv" readonly style="background:var(--bg)"></div>
+    <div class="field"><label>Carta de motivación <span style="color:var(--danger)">*</span></label><textarea id="postular-carta" placeholder="Escribe tu carta de motivación..."></textarea></div>
+    <div style="margin-bottom:14px">
+      <p style="font-size:.88rem;font-weight:600;margin-bottom:8px">Archivos adjuntos <span style="color:var(--danger)">*</span></p>
+      <input type="file" id="input-file-postular" multiple style="display:none">
+      <div class="upload-zone" onclick="seleccionarArchivosPostular()">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4M17 8l-5-5-5 5M12 3v12"/></svg>
+        <p>Haz clic para subir archivos<br><small>Máximo 5 MB por archivo — puedes subir varios</small></p>
+      </div>
+      <div id="archivos-postular-lista"></div>
+    </div>
+    <div id="postular-err" class="alert alert-error" style="display:none"></div>
+    <div class="modal-actions">
+      <button class="btn btn-outline" onclick="closeModal('modal-postular')">Cancelar</button>
+      <button class="btn btn-primary" onclick="enviarPostulacion()">Enviar solicitud</button>
+    </div>
+  </div>
+</div>
+
+<!-- EVALUAR -->
+<div class="modal-overlay" id="modal-eval">
+  <div class="modal">
+    <h2>Evaluar solicitud</h2>
+    <div id="eval-info" style="background:var(--bg);border-radius:10px;padding:14px;margin-bottom:14px;font-size:.88rem">
+      <strong id="eval-nombre"></strong><br>
+      <span id="eval-beca" style="color:var(--text2)"></span>
+    </div>
+
+    <div class="info-section" style="margin-bottom:14px">
+      <h3>Detalles de la postulación</h3>
+      <div class="info-row">
+        <span class="info-key">Convocatoria</span>
+        <span class="info-val" id="eval-convocatoria"></span>
+      </div>
+      <div class="info-row" style="align-items:flex-start">
+        <span class="info-key">Requisitos</span>
+        <span class="info-val" id="eval-requisitos"></span>
+      </div>
+      <div class="info-row" style="align-items:flex-start">
+        <span class="info-key">Documentos requeridos</span>
+        <span class="info-val" id="eval-docs-requeridos"></span>
+      </div>
+      <div class="info-row" style="align-items:flex-start">
+        <span class="info-key">Documentos adjuntos</span>
+        <span class="info-val" id="eval-docs-adjuntos"></span>
+      </div>
+      <div class="info-row">
+        <span class="info-key">Última actualización</span>
+        <span class="info-val" id="eval-fecha-actualizacion"></span>
+      </div>
+      <div class="info-row">
+        <span class="info-key">Fecha evaluación</span>
+        <span class="info-val" id="eval-fecha-evaluacion"></span>
+      </div>
+    </div>
+
+    <div id="eval-ya-evaluada" class="alert" style="display:none"></div>
+    <div class="field">
+      <label>Puntaje (0 – 100)</label>
+      <div class="score-input">
+        <input type="number" id="eval-puntaje" min="0" max="100" placeholder="0-100" style="width:100px">
+        <span class="score-hint">El puntaje debe estar entre 0 y 100</span>
+      </div>
+      <span class="error-msg" id="eval-puntaje-err"></span>
+    </div>
+    <div class="field">
+      <label>Observación / Justificación <span style="color:var(--danger)">*</span></label>
+      <textarea id="eval-obs" placeholder="Escribe una justificación detallada de tu evaluación..."></textarea>
+      <span class="error-msg" id="eval-obs-err"></span>
+    </div>
+    <div class="modal-actions">
+      <button class="btn btn-outline" onclick="closeModal('modal-eval')">Cancelar</button>
+      <button id="btn-rechazar-eval" class="btn btn-danger btn-sm" onclick="guardarEvaluacion('rechazar')">Rechazar</button>
+      <button id="btn-guardar-eval" class="btn btn-primary" onclick="guardarEvaluacion('guardar')">Guardar evaluación</button>
+    </div>
+  </div>
+</div>
+
+<!-- CREAR/EDITAR CONVOCATORIA -->
+<div class="modal-overlay" id="modal-conv">
+  <div class="modal">
+    <h2 id="conv-modal-titulo">Nueva Convocatoria</h2>
+    <div class="field"><label>Nombre de la convocatoria <span style="color:var(--danger)">*</span></label><input type="text" id="conv-nombre" placeholder="Ej: Beca de Excelencia 2026"></div>
+    <div class="field"><label>Descripción</label><textarea id="conv-desc" placeholder="Describe la beca..."></textarea></div>
+    <div class="two-col">
+      <div class="field"><label>Fecha de inicio <span style="color:var(--danger)">*</span></label><input type="date" id="conv-inicio"></div>
+      <div class="field"><label>Fecha de cierre <span style="color:var(--danger)">*</span></label><input type="date" id="conv-fin"></div>
+    </div>
+    <div class="two-col">
+      <div class="field"><label>Número de cupos <span style="color:var(--danger)">*</span></label><input type="number" id="conv-cupos" placeholder="Ej: 10" min="1"></div>
+      <div class="field"><label>Monto de la beca ($) <span style="color:var(--danger)">*</span></label><input type="number" id="conv-monto" placeholder="Ej: 2500000" min="0"></div>
+    </div>
+    <div class="field"><label>Estado</label>
+      <select id="conv-estado"><option value="abierta">Abierta</option><option value="cerrada">Cerrada</option></select>
+    </div>
+    <div class="field"><label>Requisitos (uno por línea)</label><textarea id="conv-requisitos" placeholder="Promedio mínimo 4.5&#10;Certificado de notas&#10;Carta de motivación"></textarea></div>
+    <div class="field"><label>Documentos requeridos (uno por línea)</label><textarea id="conv-documentos" placeholder="Certificado de notas&#10;Carta de motivación"></textarea></div>
+    <div class="alert alert-error" id="conv-fecha-err" style="display:none">La fecha de cierre no puede ser anterior a la de inicio</div>
+    <div class="modal-actions">
+      <button class="btn btn-outline" onclick="closeModal('modal-conv')">Cancelar</button>
+      <button class="btn btn-primary" onclick="crearConvocatoria()">Guardar convocatoria</button>
+    </div>
+  </div>
+</div>
+
+<!-- DESEMBOLSO -->
+
+<div class="modal-overlay" id="modal-desembolso">
+  <div class="modal">
+    <h2>Confirmar desembolso</h2>
+    <div style="background:var(--bg);border-radius:10px;padding:14px;margin-bottom:16px;font-size:.88rem">
+      <strong id="desembolso-nombre"></strong><br>
+      <span id="desembolso-beca" style="color:var(--text2)"></span><br>
+      <span id="desembolso-monto" style="color:var(--success);font-weight:700;font-size:1rem"></span>
+    </div>
+    <div class="field"><label>Fecha de desembolso</label><input type="date" id="desembolso-fecha"></div>
+    <div class="field"><label>Número de transacción <span style="color:var(--danger)">*</span></label><input type="text" id="desembolso-txn" placeholder="Ej: TXN-20260218001"><span class="error-msg" id="desembolso-txn-err"></span></div>
+    <div class="field"><label>Cuenta bancaria del beneficiario</label><input type="text" id="desembolso-cuenta" placeholder="Número de cuenta"></div>
+    <div class="modal-actions">
+      <button class="btn btn-outline" onclick="closeModal('modal-desembolso')">Cancelar</button>
+      <button class="btn btn-success" onclick="confirmarDesembolso()">Confirmar desembolso</button>
+    </div>
+  </div>
+</div>
+
+<!-- SUBIR DOCUMENTO -->
+<div class="modal-overlay" id="modal-upload">
+  <div class="modal">
+    <h2>Subir documento</h2>
+    <div class="field"><label>Tipo de documento</label>
+      <select id="upload-tipo">
+        <option>Documento de identidad</option>
+        <option>Certificado de notas</option>
+        <option>Carta de motivación</option>
+        <option>Certificado de ingresos</option>
+        <option>Proyecto de investigación</option>
+        <option>Hoja de vida académica</option>
+        <option>Otro</option>
+      </select>
+    </div>
+    <input type="file" id="input-file-upload" accept="application/pdf" style="display:none">
+    <div class="upload-zone" onclick="seleccionarArchivoUpload()">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4M17 8l-5-5-5 5M12 3v12"/></svg>
+      <p>Haz clic para seleccionar un archivo PDF<br><small>Máximo 5 MB</small></p>
+    </div>
+    <p id="upload-archivo-nombre" style="font-size:.83rem;color:var(--text2);margin-top:8px;text-align:center">Ningún archivo seleccionado</p>
+    <div class="modal-actions">
+      <button class="btn btn-outline" onclick="closeModal('modal-upload')">Cancelar</button>
+      <button class="btn btn-primary" onclick="subirDocumento()">Subir documento</button>
+    </div>
+  </div>
+</div>
+
+<!-- NOTIFICACIONES -->
+<div class="modal-overlay" id="modal-notif">
+  <div class="modal" style="max-width:420px">
+    <h2>Notificaciones</h2>
+    <div id="notif-lista" style="display:flex;flex-direction:column;gap:10px;margin-top:4px;max-height:400px;overflow-y:auto"></div>
+    <div class="modal-actions"><button class="btn btn-primary" onclick="closeModal('modal-notif')">Cerrar</button></div>
+  </div>
+</div>
+
+
+<script>
+// ══════════════════════════════════════════════════════════════
+//  MOTOR DE ESTADO — simula backend en memoria
+//  Todos los datos persisten durante la sesión del navegador
+// ══════════════════════════════════════════════════════════════
+
+// ─── ESTADO GLOBAL ───────────────────────────────────────────
+let currentUser   = null;
+let loginAttempts = 0;
+let blocked       = false;
+let editandoConvId = null; // para saber si estamos editando o creando
+
+// ─── BASE DE DATOS EN MEMORIA ────────────────────────────────
+const DB = {
+  usuarios: {
+    'estudiante@itm.edu': { pass:'123456', role:'estudiante', name:'María García',       programa:'Ingeniería de Sistemas', documento:'12345678' },
+    'evaluador@itm.edu':  { pass:'123456', role:'evaluador',  name:'Dr. Carlos Rodríguez', programa:null, documento:null },
+    'admin@itm.edu':      { pass:'123456', role:'admin',       name:'Admin ITM',    programa:null, documento:null },
+    'tesoreria@itm.edu':  { pass:'123456', role:'tesoreria',   name:'Tesorería',            programa:null, documento:null },
+  },
+
+  convocatorias: [
+    { id:'conv-1', nombre:'Beca de Excelencia Académica 2026', descripcion:'Beca dirigida a estudiantes con promedio superior a 4.5 en programas de pregrado.', monto:2500000, cuposTotal:10, cuposUsados:5, fechaInicio:'2026-01-01', fechaFin:'2026-03-30', requisitos:'Promedio mínimo de 4.5\nCertificado de notas\nCarta de motivación', documentosRequeridos:['Certificado de notas','Carta de motivación'], estado:'abierta' },
+    { id:'conv-2', nombre:'Beca Apoyo Socioeconómico',          descripcion:'Apoyo económico para estudiantes en situación de vulnerabilidad económica.',         monto:1800000, cuposTotal:15, cuposUsados:12, fechaInicio:'2026-01-01', fechaFin:'2026-04-14', requisitos:'Estrato nivel 1 y 2\nCertificado de ingresos familiares\nDocumento de identidad', documentosRequeridos:['Documento de identidad','Certificado de ingresos familiares'], estado:'abierta' },
+    { id:'conv-3', nombre:'Beca Investigación Científica',      descripcion:'Financiamiento para estudiantes que participen en proyectos de investigación.',        monto:3000000, cuposTotal:5,  cuposUsados:2,  fechaInicio:'2026-01-01', fechaFin:'2026-05-10', requisitos:'Proyecto de investigación aprobado\nAval del director de investigación\nHoja de vida académica', documentosRequeridos:['Proyecto de investigación','Hoja de vida académica'], estado:'abierta' },
+    { id:'conv-4', nombre:'Beca Deportiva',                     descripcion:'Apoyo para estudiantes deportistas destacados en competencias nacionales.',            monto:1500000, cuposTotal:8,  cuposUsados:0,  fechaInicio:'2025-01-01', fechaFin:'2026-02-14', requisitos:'Certificado deportivo\nAval institucional', documentosRequeridos:['Certificado deportivo','Aval institucional'], estado:'cerrada' },
+  ],
+
+  solicitudes: [
+    { id:'sol-1', estudianteEmail:'estudiante@itm.edu', estudianteNombre:'María García',  convId:'conv-1', convNombre:'Beca de Excelencia Académica 2026', estado:'en_revision', fecha:'2026-02-14', fechaActualizacion:'2026-02-14', fechaEvaluacion:null, cartaMotivacion:'Solicito esta beca por mi excelente rendimiento académico.', documentos:['Certificado de notas','Carta de motivación'], puntaje:null, observacion:null, evaluadorNombre:null },
+    { id:'sol-2', estudianteEmail:'juan@itm.edu',       estudianteNombre:'Juan Pérez',    convId:'conv-2', convNombre:'Beca Apoyo Socioeconómico',          estado:'en_revision', fecha:'2026-02-09', fechaActualizacion:'2026-02-09', fechaEvaluacion:null, cartaMotivacion:'Necesito apoyo económico para continuar mis estudios.', documentos:['Documento de identidad','Certificado de ingresos familiares'], puntaje:null, observacion:null, evaluadorNombre:null },
+    { id:'sol-3', estudianteEmail:'ana@itm.edu',        estudianteNombre:'Ana Martínez',  convId:'conv-1', convNombre:'Beca de Excelencia Académica 2026', estado:'aprobado',    fecha:'2026-02-08', fechaActualizacion:'2026-02-10', fechaEvaluacion:'2026-02-10', cartaMotivacion:'Tengo promedio de 4.8 y quiero continuar mi formación.', documentos:['Certificado de notas','Carta de motivación'], puntaje:85, observacion:'Excelente rendimiento académico. Cumple todos los requisitos.', evaluadorNombre:'Dr. Carlos Rodríguez' },
+    { id:'sol-4', estudianteEmail:'carlos@itm.edu',     estudianteNombre:'Carlos Ramírez',convId:'conv-3', convNombre:'Beca Investigación Científica',     estado:'rechazado',   fecha:'2026-02-04', fechaActualizacion:'2026-02-06', fechaEvaluacion:'2026-02-06', cartaMotivacion:'Participo en un proyecto de investigación en IA.', documentos:['Proyecto de investigación','Hoja de vida académica'], puntaje:32, observacion:'El proyecto no cumple con los estándares mínimos requeridos.', evaluadorNombre:'Dr. Carlos Rodríguez' },
+    { id:'sol-5', estudianteEmail:'laura@itm.edu',      estudianteNombre:'Laura Sánchez', convId:'conv-2', convNombre:'Beca Apoyo Socioeconómico',          estado:'aprobado',    fecha:'2026-02-03', fechaActualizacion:'2026-02-10', fechaEvaluacion:'2026-02-10', cartaMotivacion:'Soy de estrato 1 y necesito apoyo.', documentos:['Documento de identidad','Certificado de ingresos familiares'], puntaje:88, observacion:'Cumple todos los criterios socioeconómicos. Aprobada.', evaluadorNombre:'Dr. Carlos Rodríguez' },
+    { id:'sol-6', estudianteEmail:'pedro@itm.edu',      estudianteNombre:'Pedro González',convId:'conv-1', convNombre:'Beca de Excelencia Académica 2026', estado:'aprobado',    fecha:'2026-02-11', fechaActualizacion:'2026-02-11', fechaEvaluacion:'2026-02-11', cartaMotivacion:'Soy el mejor estudiante de mi carrera.', documentos:['Certificado de notas','Carta de motivación'], puntaje:92, observacion:'Promedio sobresaliente. Altamente recomendado.', evaluadorNombre:'Dr. Carlos Rodríguez' },
+  ],
+
+  documentos: {
+    'estudiante@itm.edu': [
+      { id:'doc-1', tipo:'Documento de identidad', nombre:'cedula.pdf',           fecha:'2026-01-15', estado:'verificado',  dataUrl:null },
+      { id:'doc-2', tipo:'Certificado de notas',   nombre:'notas_2025.pdf',        fecha:'2026-02-15', estado:'verificado',  dataUrl:null },
+      { id:'doc-3', tipo:'Carta de motivación',    nombre:'carta_motivacion.pdf',  fecha:'2026-02-15', estado:'verificado',  dataUrl:null },
+      { id:'doc-4', tipo:'Certificado de ingresos',nombre:'',                      fecha:'No cargado', estado:'pendiente',   dataUrl:null },
+    ],
+    'juan@itm.edu': [
+      { id:'doc-5', tipo:'Documento de identidad', nombre:'juan_cedula.pdf',       fecha:'2026-02-08', estado:'verificado',  dataUrl:null },
+      { id:'doc-6', tipo:'Certificado de ingresos',nombre:'juan_ingresos.pdf',     fecha:'2026-02-08', estado:'verificado',  dataUrl:null },
+    ],
+    'ana@itm.edu': [
+      { id:'doc-7', tipo:'Certificado de notas',   nombre:'ana_notas.pdf',         fecha:'2026-02-07', estado:'verificado',  dataUrl:null },
+      { id:'doc-8', tipo:'Carta de motivación',    nombre:'ana_carta.pdf',         fecha:'2026-02-07', estado:'verificado',  dataUrl:null },
+    ],
+    'carlos@itm.edu': [
+      { id:'doc-9', tipo:'Proyecto de investigación', nombre:'carlos_proyecto.pdf', fecha:'2026-02-03', estado:'verificado',  dataUrl:null },
+      { id:'doc-10', tipo:'Hoja de vida académica',    nombre:'carlos_hv.pdf',       fecha:'2026-02-03', estado:'verificado',  dataUrl:null },
+    ],
+    'laura@itm.edu': [
+      { id:'doc-11', tipo:'Documento de identidad', nombre:'laura_cedula.pdf',     fecha:'2026-02-02', estado:'verificado',  dataUrl:null },
+      { id:'doc-12', tipo:'Certificado de ingresos', nombre:'laura_ingresos.pdf',   fecha:'2026-02-02', estado:'verificado',  dataUrl:null },
+    ],
+    'pedro@itm.edu': [
+      { id:'doc-13', tipo:'Certificado de notas',   nombre:'pedro_notas.pdf',      fecha:'2026-02-10', estado:'verificado',  dataUrl:null },
+      { id:'doc-14', tipo:'Carta de motivación',    nombre:'pedro_carta.pdf',      fecha:'2026-02-10', estado:'verificado',  dataUrl:null },
+    ],
+  },
+
+  desembolsos: [
+    { id:'desem-1', solId:'sol-6', estudianteNombre:'Pedro González',  beca:'Beca de Excelencia Académica 2026', monto:2500000, cuenta:'****1234', txn:null,            fecha:null,          estado:'pendiente'  },
+    { id:'desem-2', solId:'sol-5', estudianteNombre:'Laura Sánchez',   beca:'Beca Apoyo Socioeconómico',          monto:1800000, cuenta:'****3478', txn:'TXN-20260210', fecha:'2026-02-10', estado:'procesado'  },
+    { id:'desem-3', solId:'sol-3', estudianteNombre:'Ana Martínez',    beca:'Beca de Excelencia Académica 2026', monto:2500000, cuenta:'****8012', txn:'TXN-20260205', fecha:'2026-02-05', estado:'completado' },
+  ],
+
+  notificaciones: {
+    'estudiante@itm.edu': [
+      { id:'n1', titulo:'Solicitud recibida',    mensaje:'Tu solicitud para Beca de Excelencia Académica 2026 fue recibida. Estado: En revisión.', leida:false, fecha:'Hace 2 horas' },
+      { id:'n2', titulo:'Documento verificado',  mensaje:'Tu Certificado de notas ha sido verificado exitosamente.',                                leida:false, fecha:'Hace 1 día'  },
+    ],
+  },
+};
+
+// Helper para generar IDs únicos
+function uid(prefix){ return prefix+'-'+Date.now()+'-'+Math.random().toString(36).slice(2,6); }
+// Helper para formatear moneda
+function fmt(n){ return '$'+Number(n).toLocaleString('es-CO'); }
+// Helper para fecha hoy
+function hoy(){ return new Date().toISOString().split('T')[0]; }
+
+
+function escapeHtml(value){
+  return String(value ?? '').replace(/[&<>"']/g, ch => ({
+    '&':'&amp;',
+    '<':'&lt;',
+    '>':'&gt;',
+    '"':'&quot;',
+    "'":'&#39;'
+  }[ch]));
+}
+function splitLines(value){
+  return String(value ?? '').split(/\n+/).map(v => v.trim()).filter(Boolean);
+}
+function getConvocatoriaById(id){
+  return DB.convocatorias.find(c => c.id === id) || null;
+}
+function getDocumentosRequeridos(conv){
+  if (conv && Array.isArray(conv.documentosRequeridos) && conv.documentosRequeridos.length > 0) {
+    return conv.documentosRequeridos;
+  }
+  return splitLines(conv?.requisitos || '');
+}
+function getDocumentosAdjuntos(email, solicitud){
+  const docs = (DB.documentos[email] || []).filter(d => d && (d.nombre || d.tipo || d.dataUrl));
+  if (docs.length) return docs;
+
+  return (solicitud?.documentos || []).map((nombre, index) => ({
+    id: `${solicitud?.id || 'sol'}-doc-${index}`,
+    tipo: 'Documento adjunto',
+    nombre,
+    fecha: solicitud?.fecha || '—',
+    estado: 'pendiente',
+    dataUrl: null
+  }));
+}
+function renderBadgeList(items, emptyText='Sin datos'){
+  if (!items || !items.length) {
+    return `<span style="color:var(--text3)">${escapeHtml(emptyText)}</span>`;
+  }
+  return `<div style="display:flex;flex-wrap:wrap;gap:6px">${items.map(item => `<span class="badge badge-gray">${escapeHtml(item)}</span>`).join('')}</div>`;
+}
+function renderDocumentList(items, emptyText='Sin documentos adjuntos'){
+  if (!items || !items.length) {
+    return `<span style="color:var(--text3)">${escapeHtml(emptyText)}</span>`;
+  }
+  return `<div style="display:flex;flex-direction:column;gap:6px">${items.map(doc => `
+    <div style="display:flex;align-items:center;gap:8px;padding:8px 10px;background:var(--bg);border-radius:8px">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="var(--primary)" stroke-width="2">
+        <path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/>
+      </svg>
+      <div style="display:flex;flex-direction:column">
+        <span style="font-weight:600">${escapeHtml(doc.nombre || doc.tipo || 'Documento')}</span>
+        <small style="color:var(--text3)">${escapeHtml(doc.tipo || 'Adjunto')}</small>
+      </div>
+      <span style="margin-left:auto;color:var(--text3);font-size:.75rem">${escapeHtml(doc.estado || '')}</span>
+    </div>`).join('')}</div>`;
+}
+
+const navConfig = {
+  estudiante: [
+    {id:'page-est-dashboard',label:'Dashboard',icon:'grid'},
+    {id:'page-est-convocatorias',label:'Convocatorias',icon:'list'},
+    {id:'page-est-documentos',label:'Documentos',icon:'upload'},
+    {id:'page-est-solicitudes',label:'Solicitudes',icon:'check'},
+    {id:'page-est-perfil',label:'Perfil',icon:'user'},
+  ],
+  evaluador: [
+    {id:'page-eval-dashboard',label:'Dashboard',icon:'grid'},
+    {id:'page-eval-solicitudes',label:'Solicitudes',icon:'check'},
+  ],
+  admin: [
+    {id:'page-admin-dashboard',label:'Dashboard',icon:'grid'},
+    {id:'page-admin-ranking',label:'Ranking',icon:'star'},
+  ],
+  tesoreria: [
+    {id:'page-tes-dashboard',label:'Dashboard',icon:'grid'},
+    {id:'page-tes-desembolsos',label:'Desembolsos',icon:'dollar'},
+  ],
+};
+
+const icons = {
+  grid: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>`,
+  list: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/></svg>`,
+  upload: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4M17 8l-5-5-5 5M12 3v12"/></svg>`,
+  check: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>`,
+  user: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2M12 11a4 4 0 100-8 4 4 0 000 8z"/></svg>`,
+  star: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>`,
+  dollar: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 000 7h5a3.5 3.5 0 010 7H6"/></svg>`,
+};
+
+// ─── VIEWS ───────────────────────────────────────────────────
+function showView(id){
+  document.querySelectorAll('.view').forEach(v=>{ v.classList.remove('active'); v.scrollTop=0; });
+  const el=document.getElementById(id);
+  el.classList.add('active'); el.scrollTop=0; window.scrollTo(0,0);
+}
+
+// ─── MODO ────────────────────────────────────────────────────
+// Cambia a true solo cuando el backend Node.js esté corriendo
+const BACKEND_ACTIVO = false;
+const API_URL = 'http://localhost:3000/api';
+
+// ─── LOGIN ───────────────────────────────────────────────────
+async function doLogin(){
+  const email = document.getElementById('login-email').value.trim();
+  const pass  = document.getElementById('login-pass').value;
+  document.getElementById('login-err').classList.remove('show');
+
+  if(!email || !pass){
+    showErr('login-err','Por favor completa todos los campos.');
+    return;
+  }
+
+  // Si el backend está activo, intentarlo primero
+  if(BACKEND_ACTIVO){
+    try {
+      const ctrl = new AbortController();
+      const timer = setTimeout(()=>ctrl.abort(), 3000);
+      const res = await fetch(API_URL+'/auth/login',{
+        method:'POST',
+        headers:{'Content-Type':'application/json'},
+        body:JSON.stringify({correo:email, password:pass}),
+        signal:ctrl.signal
+      });
+      clearTimeout(timer);
+      const data = await res.json();
+      if(res.ok){
+        currentUser = {email:data.usuario.correo, name:data.usuario.nombre, role:data.usuario.rol};
+        localStorage.setItem('token', data.token);
+        loadApp();
+        return;
+      } else {
+        showErr('login-err', data.error || 'Credenciales inválidas');
+        return;
+      }
+    } catch(e){
+      console.warn('Backend no disponible, usando modo local');
+    }
+  }
+
+  // ── Modo local (siempre funciona) ──
+  if(blocked){
+    showErr('login-err','Cuenta bloqueada. Recarga la página para reintentar.');
+    return;
+  }
+  const u = DB.usuarios[email];
+  if(!u || u.pass !== pass){
+    loginAttempts++;
+    if(loginAttempts >= 3){
+      blocked = true;
+      showErr('login-err','Cuenta bloqueada por múltiples intentos fallidos.');
+      return;
+    }
+    showErr('login-err', `Credenciales inválidas. Intento ${loginAttempts}/3.`);
+    return;
+  }
+  loginAttempts = 0;
+  currentUser = {email, ...u};
+  loadApp();
+}
+function showErr(id,msg){ const e=document.getElementById(id); e.textContent=msg; e.classList.add('show'); }
+
+// ─── REGISTER ────────────────────────────────────────────────
+async function doRegister(){
+  const name  = document.getElementById('reg-name').value.trim();
+  const email = document.getElementById('reg-email').value.trim();
+  const pass  = document.getElementById('reg-pass').value;
+  const pass2 = document.getElementById('reg-pass2').value;
+  const prog  = document.getElementById('reg-programa').value.trim();
+  const doc   = document.getElementById('reg-doc').value.trim();
+
+  document.getElementById('reg-email-err').classList.remove('show');
+  document.getElementById('reg-pass-err').classList.remove('show');
+
+  if(!name||!email||!pass||!pass2||!prog||!doc){
+    showToast('Completa todos los campos','error'); return;
+  }
+  if(!/^[^\s@]+@[^\s@]+\.edu$/i.test(email)){
+    showErr('reg-email-err','Solo se permiten correos que terminen en .edu'); return;
+  }
+  if(DB.usuarios[email]){
+    showErr('reg-email-err','Este correo ya está registrado.'); return;
+  }
+  if(pass.length < 8){
+    showErr('reg-pass-err','La contraseña debe tener mínimo 8 caracteres'); return;
+  }
+  if(pass !== pass2){
+    showErr('reg-pass-err','Las contraseñas no coinciden'); return;
+  }
+
+  // Si backend activo, registrar también en BD
+  if(BACKEND_ACTIVO){
+    try {
+      const ctrl = new AbortController();
+      const timer = setTimeout(()=>ctrl.abort(), 3000);
+      const res = await fetch(API_URL+'/auth/register',{
+        method:'POST',
+        headers:{'Content-Type':'application/json'},
+        body:JSON.stringify({nombre:name,correo:email,password:pass,programa:prog,documento:doc}),
+        signal:ctrl.signal
+      });
+      clearTimeout(timer);
+      const data = await res.json();
+      if(!res.ok){ showToast(data.error||'Error en el registro','error'); return; }
+    } catch(e){ console.warn('Backend no disponible → registro solo local'); }
+  }
+
+  // Guardar local siempre
+  DB.usuarios[email] = {pass, role:'estudiante', name, programa:prog, documento:doc};
+  DB.documentos[email] = [];
+  const a = document.getElementById('reg-alert');
+  a.textContent = '¡Cuenta creada exitosamente! Ya puedes iniciar sesión.';
+  a.style.display = 'block';
+  setTimeout(()=>{ showView('view-login'); a.style.display='none'; }, 2000);
+}
+
+// ─── APP LOAD ────────────────────────────────────────────────
+function loadApp(){
+  const nav=navConfig[currentUser.role];
+  const initials=currentUser.name.split(' ').map(w=>w[0]).join('').substring(0,2).toUpperCase();
+  document.getElementById('sb-name').textContent=currentUser.name;
+  document.getElementById('sb-role').textContent={estudiante:'Estudiante',evaluador:'Evaluador',admin:'Administrador',tesoreria:'Tesorería'}[currentUser.role];
+  document.getElementById('sb-avatar').textContent=initials;
+  document.getElementById('top-avatar').textContent=initials;
+  const navEl=document.getElementById('sidebar-nav');
+  navEl.innerHTML=nav.map((item,i)=>`
+    <div class="nav-item ${i===0?'active':''}" onclick="showPage('${item.id}',this)">
+      ${icons[item.icon]||''} ${item.label}
+    </div>`).join('');
+  document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
+  renderPage(nav[0].id);
+  document.getElementById(nav[0].id).classList.add('active');
+  showView('view-app');
+}
+
+function showPage(id,navEl){
+  document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
+  const page=document.getElementById(id);
+  if(page){ renderPage(id); page.classList.add('active'); }
+  document.querySelectorAll('.nav-item').forEach(n=>n.classList.remove('active'));
+  if(navEl) navEl.classList.add('active');
+  else document.querySelectorAll('.nav-item').forEach(n=>{
+    if(n.getAttribute('onclick')?.includes(id)) n.classList.add('active');
+  });
+}
+
+function doLogout(){
+  currentUser=null; loginAttempts=0; blocked=false;
+  document.getElementById('login-email').value='';
+  document.getElementById('login-pass').value='';
+  document.getElementById('login-err').classList.remove('show');
+  showView('view-login');
+}
+
+// ─── RENDER PAGES (conectado al DB) ──────────────────────────
+function renderPage(id){
+  if(id==='page-est-dashboard')    renderEstDashboard();
+  if(id==='page-est-convocatorias')renderEstConvocatorias();
+  if(id==='page-est-documentos')   renderEstDocumentos();
+  if(id==='page-est-solicitudes')  renderEstSolicitudes();
+  if(id==='page-est-perfil')       renderEstPerfil();
+  if(id==='page-eval-dashboard')   renderEvalDashboard();
+  if(id==='page-eval-solicitudes') renderEvalSolicitudes();
+  if(id==='page-admin-dashboard')  renderAdminDashboard();
+  if(id==='page-admin-ranking')    renderAdminRanking();
+  if(id==='page-tes-dashboard')    renderTesDashboard();
+  if(id==='page-tes-desembolsos')  renderTesDesembolsos();
+}
+
+// ── ESTUDIANTE DASHBOARD ──────────────────────────────────────
+function renderEstDashboard(){
+  const misSols=DB.solicitudes.filter(s=>s.estudianteEmail===currentUser.email);
+  const convAbiertas=DB.convocatorias.filter(c=>c.estado==='abierta').length;
+  document.getElementById('dash-welcome').textContent=`Dashboard — ${currentUser.name}`;
+  // Stats
+  const statsEl=document.querySelector('#page-est-dashboard .stats-grid');
+  if(statsEl) statsEl.innerHTML=`
+    <div class="stat-card"><div class="stat-icon blue"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="3" width="20" height="14" rx="2"/><path d="M8 21h8M12 17v4"/></svg></div><div><div class="stat-val">${convAbiertas}</div><div class="stat-label">Convocatorias abiertas</div></div></div>
+    <div class="stat-card"><div class="stat-icon yellow"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg></div><div><div class="stat-val">${misSols.length}</div><div class="stat-label">Solicitudes enviadas</div></div></div>
+    <div class="stat-card"><div class="stat-icon purple"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg></div><div><div class="stat-val">${misSols.filter(s=>s.estado==='en_revision').length}</div><div class="stat-label">En revisión</div></div></div>
+    <div class="stat-card"><div class="stat-icon green"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 11.08V12a10 10 0 11-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg></div><div><div class="stat-val">${misSols.filter(s=>s.estado==='aprobado').length}</div><div class="stat-label">Aprobadas</div></div></div>`;
+}
+
+// ── ESTUDIANTE CONVOCATORIAS ──────────────────────────────────
+function renderEstConvocatorias(){
+  const misSolConvIds=DB.solicitudes.filter(s=>s.estudianteEmail===currentUser.email).map(s=>s.convId);
+  const grid=document.querySelector('#page-est-convocatorias .cards-grid');
+  if(!grid) return;
+  grid.innerHTML=DB.convocatorias.map(c=>{
+    const yaPostulado=misSolConvIds.includes(c.id);
+    const hoyDate=new Date(); const finDate=new Date(c.fechaFin);
+    const vencida=hoyDate>finDate && c.estado!=='cerrada';
+    let badgeClass=c.estado==='abierta'&&!vencida?'badge-green':c.estado==='cerrada'?'badge-gray':'badge-red';
+    let estadoLabel=c.estado==='abierta'&&!vencida?'Abierta':c.estado==='cerrada'?'Cerrada':'Vencida';
+    let btnHtml='';
+    if(yaPostulado) btnHtml=`<button class="btn btn-sm badge-gray" disabled style="border-radius:8px;padding:7px 14px;font-size:.83rem;font-weight:600;cursor:default">Ya postulado</button>`;
+    else if(c.estado==='cerrada'||vencida) btnHtml=`<button class="btn btn-sm" style="background:#FEE2E2;color:#991B1B;border-radius:8px;padding:7px 14px;font-size:.83rem;font-weight:600;cursor:default">No disponible</button>`;
+    else btnHtml=`<button class="btn btn-primary btn-sm" onclick="openPostularModal('${c.id}')">Aplicar</button>`;
+    const reqs=c.requisitos?c.requisitos.split('\n').map(r=>`<li>${r}</li>`).join(''):'';
+    return `<div class="conv-card">
+      <div style="display:flex;justify-content:space-between;align-items:flex-start"><h3>${c.nombre}</h3><span class="badge ${badgeClass}">${estadoLabel}</span></div>
+      <p>${c.descripcion||''}</p>
+      <div class="meta">
+        <span>💰 <strong style="color:var(--success)">${fmt(c.monto)}</strong></span>
+        <span>📅 Cierre: ${c.fechaFin}</span>
+        <span>👥 ${c.cuposTotal-c.cuposUsados} de ${c.cuposTotal} cupos disponibles</span>
+      </div>
+      ${reqs?`<div class="reqs"><strong>Requisitos:</strong><ul>${reqs}</ul></div>`:''}
+      <div class="actions">${btnHtml}</div>
+    </div>`;
+  }).join('');
+}
+
+// ── ESTUDIANTE DOCUMENTOS ─────────────────────────────────────
+function renderEstDocumentos(){
+  const docs=DB.documentos[currentUser.email]||[];
+  const tbody=document.getElementById('docs-table-body');
+  if(!tbody) return;
+  if(docs.length===0){ tbody.innerHTML=`<tr><td colspan="5" style="text-align:center;color:var(--text3);padding:24px">No tienes documentos cargados aún</td></tr>`; return; }
+  tbody.innerHTML=docs.map(d=>`
+    <tr>
+      <td><div style="display:flex;align-items:center;gap:8px">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--primary)" stroke-width="2"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+        ${d.tipo}</div></td>
+      <td>${d.nombre||'—'}</td>
+      <td>${d.fecha}</td>
+      <td><span class="badge ${d.estado==='verificado'?'badge-green':d.estado==='rechazado'?'badge-red':'badge-yellow'}">${d.estado==='verificado'?'Verificado':d.estado==='rechazado'?'Rechazado':'Pendiente'}</span></td>
+      <td>${d.dataUrl
+        ? `<a style="color:var(--accent);font-size:.82rem;cursor:pointer" onclick="verDocumento('${d.id}')">Ver documento</a>`
+        : `<button class="btn btn-sm btn-outline" onclick="openUploadModal('${d.id}')">⬆ Subir archivo</button>`
+      }</td>
+    </tr>`).join('');
+}
+
+// ── ESTUDIANTE SOLICITUDES ────────────────────────────────────
+function renderEstSolicitudes(){
+  const misSols=DB.solicitudes.filter(s=>s.estudianteEmail===currentUser.email);
+  const cont=document.getElementById('est-sol-container');
+  const noSols=document.getElementById('no-solicitudes');
+  if(!cont) return;
+  if(misSols.length===0){ cont.innerHTML=''; noSols.style.display='block'; return; }
+  noSols.style.display='none';
+  cont.innerHTML=misSols.map(s=>{
+    const badgeClass=s.estado==='en_revision'?'badge-yellow':s.estado==='aprobado'?'badge-green':s.estado==='rechazado'?'badge-red':'badge-blue';
+    const estadoLabel=s.estado==='en_revision'?'En revisión':s.estado==='aprobado'?'Aprobado':s.estado==='rechazado'?'Rechazado':'Desembolsado';
+    const docsHtml=s.documentos.map(d=>`
+      <div class="doc-item">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="18" height="18"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/></svg>
+        <div><div class="doc-name">${d}</div><div class="doc-type">PDF</div></div>
+        <span class="badge badge-green" style="margin-left:auto">Verificado</span>
+      </div>`).join('');
+    const evalInfo=s.puntaje!==null?`<div class="info-banner" style="margin-top:12px;background:${s.estado==='aprobado'?'#D1FAE5':'#FEE2E2'};border-color:${s.estado==='aprobado'?'#6EE7B7':'#FCA5A5'};color:${s.estado==='aprobado'?'#065F46':'#991B1B'}">
+      <strong>Puntaje: ${s.puntaje}/100</strong><br>Observación: ${s.observacion}<br><small>Evaluado por: ${s.evaluadorNombre}</small>
+    </div>`:`<div class="info-banner" style="margin-top:12px">Tu solicitud está siendo revisada por el equipo de evaluación.</div>`;
+    return `<div class="sol-card">
+      <div class="sol-card-header"><h3>${s.convNombre}</h3><span class="badge ${badgeClass}">${estadoLabel}</span></div>
+      <div class="sol-meta"><span>📅 Enviada: ${s.fecha}</span><span>📎 ${s.documentos.length} documentos</span></div>
+      <div class="docs-grid">${docsHtml}</div>
+      ${evalInfo}
+    </div>`;
+  }).join('');
+}
+
+// ── ESTUDIANTE PERFIL ─────────────────────────────────────────
+function renderEstPerfil(){
+  const u=DB.usuarios[currentUser.email];
+  if(!u) return;
+  const initials=currentUser.name.split(' ').map(w=>w[0]).join('').substring(0,2).toUpperCase();
+  const el=(id,val)=>{ const e=document.getElementById(id); if(e) e.textContent=val; };
+  el('perfil-name',currentUser.name); el('perfil-fullname',currentUser.name);
+  el('perfil-email',currentUser.email); el('perfil-avatar',initials);
+}
+
+// ── EVALUADOR DASHBOARD ───────────────────────────────────────
+function renderEvalDashboard(){
+  const total=DB.solicitudes.length;
+  const pendientes=DB.solicitudes.filter(s=>s.puntaje===null).length;
+  const aprobadas=DB.solicitudes.filter(s=>s.estado==='aprobado').length;
+  const rechazadas=DB.solicitudes.filter(s=>s.estado==='rechazado').length;
+  const statsEl=document.querySelector('#page-eval-dashboard .stats-grid');
+  if(statsEl) statsEl.innerHTML=`
+    <div class="stat-card"><div class="stat-icon blue"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/></svg></div><div><div class="stat-val">${total}</div><div class="stat-label">Total solicitudes</div></div></div>
+    <div class="stat-card"><div class="stat-icon yellow"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg></div><div><div class="stat-val">${pendientes}</div><div class="stat-label">Pendientes</div></div></div>
+    <div class="stat-card"><div class="stat-icon green"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 11.08V12a10 10 0 11-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg></div><div><div class="stat-val">${aprobadas}</div><div class="stat-label">Aprobadas</div></div></div>
+    <div class="stat-card"><div class="stat-icon red"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="15" y1="9" x2="9" y2="15"/><line x1="9" y1="9" x2="15" y2="15"/></svg></div><div><div class="stat-val">${rechazadas}</div><div class="stat-label">Rechazadas</div></div></div>`;
+  renderTablaEval('#page-eval-dashboard table tbody');
+}
+
+function renderEvalSolicitudes(){
+  renderTablaEval('#page-eval-solicitudes table tbody');
+}
+
+function renderTablaEval(selector){
+  const tbody=document.querySelector(selector);
+  if(!tbody) return;
+  tbody.innerHTML=DB.solicitudes.map(s=>{
+    const conv=getConvocatoriaById(s.convId);
+    const docsReq=getDocumentosRequeridos(conv);
+    const docsAdj=getDocumentosAdjuntos(s.estudianteEmail, s);
+    const badgeClass=s.estado==='en_revision'?'badge-yellow':s.estado==='aprobado'?'badge-green':s.estado==='rechazado'?'badge-red':'badge-blue';
+    const estadoLabel=s.estado==='en_revision'?'En revisión':s.estado==='aprobado'?'Aprobado':'Rechazado';
+    const puntajeHtml=s.puntaje!==null?`<span style="font-weight:600;color:${s.puntaje>=60?'var(--success)':'var(--danger)'}">${s.puntaje}/100</span>`:`<span style="color:var(--text3)">Sin evaluar</span>`;
+    const btnLabel=s.puntaje!==null?'Ver evaluación':'Evaluar';
+    const btnClass=s.puntaje!==null?'btn-outline':'btn-primary';
+    const reqResumen=conv?.requisitos ? splitLines(conv.requisitos).join(' · ') : 'No definidos';
+    const adjResumen=docsAdj.length ? docsAdj.map(d=>d.nombre || d.tipo || 'Documento').join(' · ') : 'Sin documentos';
+    const ultimaActualizacion=s.fechaActualizacion || s.fecha;
+    return `<tr>
+      <td><strong>${escapeHtml(s.estudianteNombre)}</strong><br><small style="color:var(--text3)">${escapeHtml(s.estudianteEmail)}</small></td>
+      <td>
+        <strong>${escapeHtml(s.convNombre)}</strong><br>
+        <small style="color:var(--text2)"><b>Requisitos:</b> ${escapeHtml(reqResumen)}</small><br>
+        <small style="color:var(--text2)"><b>Docs requeridos:</b> ${escapeHtml(docsReq.join(', ') || 'No definidos')}</small><br>
+        <small style="color:var(--text2)"><b>Adjuntos:</b> ${escapeHtml(adjResumen)}</small>
+      </td>
+      <td>${escapeHtml(s.fecha)}<br><small style="color:var(--text3)">Últ. act.: ${escapeHtml(ultimaActualizacion)}</small></td>
+      <td>${puntajeHtml}</td>
+      <td><span class="badge ${badgeClass}">${estadoLabel}</span></td>
+      <td><button class="btn btn-sm ${btnClass}" onclick="openEvalModal('${s.id}')">${btnLabel}</button></td>
+    </tr>`;
+  }).join('');
+}
+
+
+// ── ADMIN DASHBOARD ───────────────────────────────────────────
+function renderAdminDashboard(){
+  const total=DB.convocatorias.length;
+  const abiertas=DB.convocatorias.filter(c=>c.estado==='abierta').length;
+  const solicitudes=DB.solicitudes.length;
+  const presupuesto=DB.convocatorias.reduce((a,c)=>a+Number(c.monto),0);
+  const statsEl=document.querySelector('#page-admin-dashboard .stats-grid');
+  if(statsEl) statsEl.innerHTML=`
+    <div class="stat-card"><div class="stat-icon blue"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="3" width="20" height="14" rx="2"/><path d="M8 21h8M12 17v4"/></svg></div><div><div class="stat-val">${total}</div><div class="stat-label">Total convocatorias</div></div></div>
+    <div class="stat-card"><div class="stat-icon green"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="3" width="20" height="14" rx="2"/></svg></div><div><div class="stat-val">${abiertas}</div><div class="stat-label">Convocatorias abiertas</div></div></div>
+    <div class="stat-card"><div class="stat-icon yellow"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2M9 11a4 4 0 100-8 4 4 0 000 8z"/></svg></div><div><div class="stat-val">${solicitudes}</div><div class="stat-label">Solicitudes recibidas</div></div></div>
+    <div class="stat-card"><div class="stat-icon purple"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2v20M17 5H9.5a3.5 3.5 0 000 7h5a3.5 3.5 0 010 7H6"/></svg></div><div><div class="stat-val">${fmt(presupuesto)}</div><div class="stat-label">Presupuesto total</div></div></div>`;
+  const tbody=document.querySelector('#admin-conv-table');
+  if(!tbody) return;
+  tbody.innerHTML=DB.convocatorias.map(c=>`
+    <tr>
+      <td><strong>${c.nombre}</strong></td>
+      <td style="color:var(--success);font-weight:600">${fmt(c.monto)}</td>
+      <td>${c.cuposUsados}/${c.cuposTotal}</td>
+      <td>${c.fechaFin}</td>
+      <td><span class="badge ${c.estado==='abierta'?'badge-green':'badge-gray'}">${c.estado==='abierta'?'Abierta':'Cerrada'}</span></td>
+      <td style="display:flex;gap:6px;flex-wrap:wrap">
+        <button class="btn btn-sm btn-outline" onclick="showPage('page-admin-ranking',null)">Ver ranking</button>
+        <button class="btn btn-sm btn-warning" onclick="openConvModal('${c.id}')">Editar</button>
+        <button class="btn btn-sm btn-danger" onclick="eliminarConv('${c.id}')">Eliminar</button>
+      </td>
+    </tr>`).join('');
+}
+
+// ── ADMIN RANKING ─────────────────────────────────────────────
+function renderAdminRanking(){
+  const evaluadas=DB.solicitudes.filter(s=>s.puntaje!==null).sort((a,b)=>b.puntaje-a.puntaje);
+  const noEval=DB.solicitudes.filter(s=>s.puntaje===null);
+  const todas=[...evaluadas,...noEval];
+  const tbody=document.querySelector('#page-admin-ranking table tbody');
+  if(!tbody) return;
+  const medallas=['medal-1','medal-2','medal-3'];
+  tbody.innerHTML=todas.map((s,i)=>{
+    const medalClass=i<3?medallas[i]:'';
+    const badgeClass=s.estado==='aprobado'?'badge-green':s.estado==='rechazado'?'badge-red':s.puntaje!==null?'badge-blue':'badge-gray';
+    const estadoLabel=s.estado==='aprobado'?'Aprobado':s.estado==='rechazado'?'Rechazado':s.puntaje!==null?'Evaluado':'Sin evaluar';
+    const puntajeHtml=s.puntaje!==null?`<span style="font-weight:700;color:${s.puntaje>=60?'var(--success)':'var(--danger)'}">${s.puntaje}/100</span>`:'—';
+    const disabled=s.puntaje===null||s.estado==='rechazado'?'disabled style="opacity:.4"':'';
+    return `<tr class="rank-row">
+      <td><div class="rank-medal ${medalClass}" style="${!medalClass?'background:var(--bg);color:var(--text3)':''}">${i+1}</div></td>
+      <td><strong>${s.estudianteNombre}</strong><br><small style="color:var(--text3)">${s.estudianteEmail}</small></td>
+      <td>${puntajeHtml}</td>
+      <td><span class="badge ${badgeClass}">${estadoLabel}</span></td>
+      <td><input type="checkbox" id="rank-sel-${s.id}" ${s.estado==='aprobado'?'checked':''} ${disabled} style="width:18px;height:18px;cursor:pointer"></td>
+    </tr>`;
+  }).join('');
+}
+
+// ── TESORERÍA DASHBOARD ───────────────────────────────────────
+function renderTesDashboard(){
+  const pendientes=DB.desembolsos.filter(d=>d.estado==='pendiente').length;
+  const completados=DB.desembolsos.filter(d=>d.estado==='completado').length;
+  const totalProcesado=DB.desembolsos.filter(d=>d.estado!=='pendiente').reduce((a,d)=>a+d.monto,0);
+  const totalPorDesembolsar=DB.desembolsos.filter(d=>d.estado==='pendiente').reduce((a,d)=>a+d.monto,0);
+  const statsEl=document.querySelector('#page-tes-dashboard .stats-grid');
+  if(statsEl) statsEl.innerHTML=`
+    <div class="stat-card"><div class="stat-icon blue"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2v20M17 5H9.5a3.5 3.5 0 000 7h5a3.5 3.5 0 010 7H6"/></svg></div><div><div class="stat-val">${fmt(totalPorDesembolsar)}</div><div class="stat-label">Total a desembolsar</div></div></div>
+    <div class="stat-card"><div class="stat-icon yellow"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg></div><div><div class="stat-val">${pendientes}</div><div class="stat-label">Pendientes</div></div></div>
+    <div class="stat-card"><div class="stat-icon green"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 11.08V12a10 10 0 11-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg></div><div><div class="stat-val">${completados}</div><div class="stat-label">Completados</div></div></div>
+    <div class="stat-card"><div class="stat-icon purple"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="5" width="20" height="14" rx="2"/><line x1="2" y1="10" x2="22" y2="10"/></svg></div><div><div class="stat-val">${fmt(totalProcesado)}</div><div class="stat-label">Total procesado</div></div></div>`;
+  renderTablaTes('#page-tes-dashboard table tbody');
+}
+
+function renderTesDesembolsos(){
+  renderTablaTes('#page-tes-desembolsos table tbody');
+}
+
+function renderTablaTes(selector){
+  const tbody=document.querySelector(selector);
+  if(!tbody) return;
+  const esDetalle=selector.includes('tes-desembolsos');
+  tbody.innerHTML=DB.desembolsos.map(d=>{
+    const badgeClass=d.estado==='pendiente'?'badge-yellow':d.estado==='procesado'?'badge-blue':'badge-green';
+    const estadoLabel=d.estado==='pendiente'?'Pendiente':d.estado==='procesado'?'Procesado':'Completado';
+    const accionHtml=d.estado==='completado'
+      ? `<a style="color:var(--accent);font-size:.83rem;cursor:pointer" onclick="verComprobante('${d.id}')">Ver comprobante</a>`
+      : `<button class="btn btn-success btn-sm" onclick="openDesembolsoModal('${d.id}')">Confirmar desembolso</button>`;
+    if(esDetalle){
+      return `<tr>
+        <td><strong>${d.estudianteNombre}</strong></td>
+        <td>${d.beca}</td>
+        <td style="color:var(--success);font-weight:600">${fmt(d.monto)}</td>
+        <td>${d.cuenta||'—'}</td>
+        <td>${d.txn||'—'}</td>
+        <td>${d.fecha||'—'}</td>
+        <td><span class="badge ${badgeClass}">${estadoLabel}</span></td>
+        <td>${accionHtml}</td>
+      </tr>`;
+    } else {
+      return `<tr>
+        <td><strong>${d.estudianteNombre}</strong></td>
+        <td>${d.beca}</td>
+        <td style="color:var(--success);font-weight:600">${fmt(d.monto)}</td>
+        <td>${d.cuenta||'—'}</td>
+        <td><span class="badge ${badgeClass}">${estadoLabel}</span></td>
+        <td>${accionHtml}</td>
+      </tr>`;
+    }
+  }).join('');
+}
+
+// ─── MODALS ───────────────────────────────────────────────────
+function openModal(id){document.getElementById(id).classList.add('open');}
+function closeModal(id){document.getElementById(id).classList.remove('open');}
+window.addEventListener('click',e=>{if(e.target.classList.contains('modal-overlay'))e.target.classList.remove('open');});
+
+// ── POSTULAR ─────────────────────────────────────────────────
+function openPostularModal(convId){
+  const conv=DB.convocatorias.find(c=>c.id===convId);
+  if(!conv) return;
+  document.getElementById('postular-conv').value=conv.nombre;
+  document.getElementById('postular-conv').dataset.convId=convId;
+  document.getElementById('postular-carta').value='';
+  document.getElementById('postular-err').style.display='none';
+  // Reset archivos subidos
+  window._archivosPostular=[];
+  actualizarListaArchivosModal();
+  openModal('modal-postular');
+}
+
+function actualizarListaArchivosModal(){
+  const lista=document.getElementById('archivos-postular-lista');
+  if(!lista) return;
+  const archivos=window._archivosPostular||[];
+  lista.innerHTML=archivos.length===0?''
+    :archivos.map((f,i)=>`<div style="display:flex;align-items:center;gap:8px;padding:6px 10px;background:var(--bg);border-radius:8px;font-size:.82rem;margin-top:6px">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="var(--primary)" stroke-width="2"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/></svg>
+      ${f.nombre} <span style="color:var(--text3)">(${(f.size/1024).toFixed(1)} KB)</span>
+      <button onclick="window._archivosPostular.splice(${i},1);actualizarListaArchivosModal()" style="margin-left:auto;background:none;border:none;color:var(--danger);cursor:pointer;font-size:.9rem">✕</button>
+    </div>`).join('');
+}
+
+function seleccionarArchivosPostular(){
+  const input=document.getElementById('input-file-postular');
+  input.click();
+  input.onchange=()=>{
+    if(!window._archivosPostular) window._archivosPostular=[];
+    Array.from(input.files).forEach(f=>{
+      if(f.size>5*1024*1024){ showToast('El archivo excede 5 MB','error'); return; }
+      const reader=new FileReader();
+      reader.onload=e=>{ window._archivosPostular.push({nombre:f.name,size:f.size,dataUrl:e.target.result}); actualizarListaArchivosModal(); };
+      reader.readAsDataURL(f);
+    });
+    input.value='';
+  };
+}
+
+function enviarPostulacion(){
+  const carta=document.getElementById('postular-carta').value.trim();
+  const convId=document.getElementById('postular-conv').dataset.convId;
+  const conv=DB.convocatorias.find(c=>c.id===convId);
+  const errEl=document.getElementById('postular-err');
+  if(!carta){ errEl.style.display='block'; errEl.textContent='La carta de motivación es obligatoria.'; return; }
+  if(!window._archivosPostular||window._archivosPostular.length===0){ errEl.style.display='block'; errEl.textContent='Debes adjuntar al menos un documento.'; return; }
+  // Guardar en DB
+  const nueva={ id:uid('sol'), estudianteEmail:currentUser.email, estudianteNombre:currentUser.name,
+    convId, convNombre:conv.nombre, estado:'en_revision', fecha:hoy(), fechaActualizacion:hoy(), fechaEvaluacion:null,
+    cartaMotivacion:carta, documentos:window._archivosPostular.map(f=>f.nombre),
+    puntaje:null, observacion:null, evaluadorNombre:null };
+  DB.solicitudes.push(nueva);
+  // Guardar documentos en DB.documentos
+  if(!DB.documentos[currentUser.email]) DB.documentos[currentUser.email]=[];
+  window._archivosPostular.forEach(f=>{
+    DB.documentos[currentUser.email].push({id:uid('doc'),tipo:'Documento de solicitud',nombre:f.nombre,fecha:hoy(),estado:'pendiente',dataUrl:f.dataUrl});
+  });
+  // Notificación
+  if(!DB.notificaciones[currentUser.email]) DB.notificaciones[currentUser.email]=[];
+  DB.notificaciones[currentUser.email].unshift({id:uid('n'),titulo:'Solicitud enviada',mensaje:`Tu solicitud para "${conv.nombre}" fue recibida. Estado: En revisión.`,leida:false,fecha:'Ahora'});
+  closeModal('modal-postular');
+  showToast('¡Solicitud enviada exitosamente! Estado: En revisión','success');
+  renderEstConvocatorias();
+}
+
+// ── DOCUMENTOS ────────────────────────────────────────────────
+function openUploadModal(docId){
+  window._uploadDocId=docId||null;
+  document.getElementById('upload-tipo').value='Documento de identidad';
+  const input=document.getElementById('input-file-upload');
+  if(input) input.value='';
+  document.getElementById('upload-archivo-nombre').textContent='Ningún archivo seleccionado';
+  openModal('modal-upload');
+}
+
+function seleccionarArchivoUpload(){
+  const input=document.getElementById('input-file-upload');
+  input.click();
+  input.onchange=()=>{
+    const f=input.files[0]; if(!f) return;
+    if(f.type!=='application/pdf'){ showToast('Solo se permiten archivos PDF','error'); input.value=''; return; }
+    if(f.size>5*1024*1024){ showToast('El archivo excede 5 MB','error'); input.value=''; return; }
+    document.getElementById('upload-archivo-nombre').textContent=f.name;
+    const reader=new FileReader();
+    reader.onload=e=>{ window._uploadDataUrl=e.target.result; window._uploadNombre=f.name; window._uploadSize=f.size; };
+    reader.readAsDataURL(f);
+  };
+}
+
+function subirDocumento(){
+  if(!window._uploadDataUrl){ showToast('Selecciona un archivo PDF primero','error'); return; }
+  const tipo=document.getElementById('upload-tipo').value;
+  if(!DB.documentos[currentUser.email]) DB.documentos[currentUser.email]=[];
+  const docs=DB.documentos[currentUser.email];
+  if(window._uploadDocId){
+    // Actualizar doc existente
+    const doc=docs.find(d=>d.id===window._uploadDocId);
+    if(doc){ doc.nombre=window._uploadNombre; doc.fecha=hoy(); doc.estado='pendiente'; doc.dataUrl=window._uploadDataUrl; }
+  } else {
+    // Nuevo doc
+    docs.push({id:uid('doc'),tipo,nombre:window._uploadNombre,fecha:hoy(),estado:'pendiente',dataUrl:window._uploadDataUrl});
+  }
+  window._uploadDataUrl=null; window._uploadNombre=null;
+  closeModal('modal-upload');
+  showToast('Documento subido exitosamente. En revisión para verificación.','success');
+  renderEstDocumentos();
+}
+
+function verDocumento(docId){
+  const docs=DB.documentos[currentUser.email]||[];
+  const doc=docs.find(d=>d.id===docId);
+  if(!doc||!doc.dataUrl){ showToast('Documento no disponible','error'); return; }
+  const win=window.open(); win.document.write(`<iframe src="${doc.dataUrl}" style="width:100%;height:100vh;border:none"></iframe>`);
+}
+
+// ── EVALUAR ───────────────────────────────────────────────────
+function openEvalModal(solId){
+  const sol=DB.solicitudes.find(s=>s.id===solId);
+  if(!sol) return;
+  const conv=getConvocatoriaById(sol.convId);
+  const docsReq=getDocumentosRequeridos(conv);
+  const docsAdj=getDocumentosAdjuntos(sol.estudianteEmail, sol);
+  window._evalSolId=solId;
+  const yaEvaluada=sol.puntaje!==null;
+
+  document.getElementById('eval-nombre').textContent=sol.estudianteNombre;
+  document.getElementById('eval-beca').textContent=sol.convNombre;
+  document.getElementById('eval-convocatoria').textContent=conv?.nombre || sol.convNombre;
+  document.getElementById('eval-requisitos').innerHTML=renderBadgeList(splitLines(conv?.requisitos || ''), 'Sin requisitos');
+  document.getElementById('eval-docs-requeridos').innerHTML=renderBadgeList(docsReq, 'Sin documentos requeridos');
+  document.getElementById('eval-docs-adjuntos').innerHTML=renderDocumentList(docsAdj, 'No hay documentos adjuntos');
+  document.getElementById('eval-fecha-actualizacion').textContent=sol.fechaActualizacion || sol.fecha || '—';
+  document.getElementById('eval-fecha-evaluacion').textContent=sol.fechaEvaluacion || 'Pendiente';
+
+  document.getElementById('eval-puntaje').value=yaEvaluada?sol.puntaje:'';
+  document.getElementById('eval-obs').value=yaEvaluada?sol.observacion:'';
+  document.getElementById('eval-puntaje').disabled=yaEvaluada;
+  document.getElementById('eval-obs').disabled=yaEvaluada;
+  document.getElementById('eval-puntaje-err').classList.remove('show');
+  document.getElementById('eval-obs-err').classList.remove('show');
+
+  const btnGuardar=document.getElementById('btn-guardar-eval');
+  const btnRechazar=document.getElementById('btn-rechazar-eval');
+  const msgEval=document.getElementById('eval-ya-evaluada');
+
+  if(yaEvaluada){
+    if(btnGuardar) btnGuardar.style.display='none';
+    if(btnRechazar) btnRechazar.style.display='none';
+    if(msgEval){
+      msgEval.style.display='block';
+      msgEval.textContent=`Evaluación registrada. Estado: ${sol.estado==='aprobado'?'Aprobado':'Rechazado'}`;
+      msgEval.className=`alert ${sol.estado==='aprobado'?'alert-success':'alert-error'}`;
+    }
+  } else {
+    if(btnGuardar) btnGuardar.style.display='inline-flex';
+    if(btnRechazar) btnRechazar.style.display='inline-flex';
+    if(msgEval) msgEval.style.display='none';
+  }
+  openModal('modal-eval');
+}
+
+function guardarEvaluacion(resultado){
+  const p=parseInt(document.getElementById('eval-puntaje').value);
+  const obs=document.getElementById('eval-obs').value.trim();
+  let ok=true;
+  if(isNaN(p)||p<0||p>100){ showErr('eval-puntaje-err','El puntaje debe estar entre 0 y 100.'); ok=false; }
+  if(obs.length < 10){ showErr('eval-obs-err','La observación debe tener al menos 10 caracteres.'); ok=false; }
+  if(!ok) return;
+
+  const sol=DB.solicitudes.find(s=>s.id===window._evalSolId);
+  if(!sol) return;
+
+  sol.puntaje=p;
+  sol.observacion=obs;
+  sol.evaluadorNombre=currentUser.name;
+  sol.fechaEvaluacion=hoy();
+  sol.fechaActualizacion=hoy();
+  sol.estado=resultado==='rechazar'?'rechazado':(p>=60?'aprobado':'rechazado');
+
+  if(!DB.notificaciones[sol.estudianteEmail]) DB.notificaciones[sol.estudianteEmail]=[];
+  DB.notificaciones[sol.estudianteEmail].unshift({
+    id:uid('n'),
+    titulo:'Solicitud evaluada',
+    mensaje:`Tu solicitud para "${sol.convNombre}" fue ${sol.estado==='aprobado'?'aprobada':'rechazada'}. Puntaje: ${p}/100.`,
+    leida:false,
+    fecha:'Ahora'
+  });
+
+  closeModal('modal-eval');
+  showToast(`Evaluación guardada. Estado: ${sol.estado==='aprobado'?'Aprobado':'Rechazado'}`,'success');
+  renderEvalDashboard();
+  renderEvalSolicitudes();
+}
+
+
+// ── CONVOCATORIAS ADMIN ───────────────────────────────────────
+function openConvModal(convId){
+  editandoConvId=convId||null;
+  document.getElementById('conv-fecha-err').style.display='none';
+  if(convId){
+    const c=DB.convocatorias.find(x=>x.id===convId);
+    if(!c) return;
+    document.getElementById('conv-modal-titulo').textContent='Editar Convocatoria';
+    document.getElementById('conv-nombre').value=c.nombre;
+    document.getElementById('conv-inicio').value=c.fechaInicio;
+    document.getElementById('conv-fin').value=c.fechaFin;
+    document.getElementById('conv-cupos').value=c.cuposTotal;
+    document.getElementById('conv-monto').value=c.monto;
+    document.getElementById('conv-desc').value=c.descripcion||'';
+    document.getElementById('conv-requisitos').value=c.requisitos||'';
+    document.getElementById('conv-documentos').value=(c.documentosRequeridos||[]).join('\\n');
+    document.getElementById('conv-estado').value=c.estado;
+  } else {
+    document.getElementById('conv-modal-titulo').textContent='Nueva Convocatoria';
+    document.getElementById('conv-nombre').value='';
+    document.getElementById('conv-inicio').value='';
+    document.getElementById('conv-fin').value='';
+    document.getElementById('conv-cupos').value='';
+    document.getElementById('conv-monto').value='';
+    document.getElementById('conv-desc').value='';
+    document.getElementById('conv-requisitos').value='';
+    document.getElementById('conv-documentos').value='';
+    document.getElementById('conv-estado').value='abierta';
+  }
+  openModal('modal-conv');
+}
+
+function crearConvocatoria(){
+  const nombre=document.getElementById('conv-nombre').value.trim();
+  const inicio=document.getElementById('conv-inicio').value;
+  const fin=document.getElementById('conv-fin').value;
+  const cupos=parseInt(document.getElementById('conv-cupos').value);
+  const monto=parseFloat(document.getElementById('conv-monto').value);
+  const desc=document.getElementById('conv-desc').value.trim();
+  const reqs=document.getElementById('conv-requisitos').value.trim();
+  const docsReq=splitLines(document.getElementById('conv-documentos').value);
+  const estado=document.getElementById('conv-estado').value;
+  if(!nombre||!inicio||!fin||!cupos||!monto){ showToast('Completa todos los campos obligatorios','error'); return; }
+  if(new Date(fin)<new Date(inicio)){ document.getElementById('conv-fecha-err').style.display='block'; return; }
+  document.getElementById('conv-fecha-err').style.display='none';
+
+  if(editandoConvId){
+    const c=DB.convocatorias.find(x=>x.id===editandoConvId);
+    if(c){
+      c.nombre=nombre;
+      c.fechaInicio=inicio;
+      c.fechaFin=fin;
+      c.cuposTotal=cupos;
+      c.monto=monto;
+      c.descripcion=desc;
+      c.requisitos=reqs;
+      c.documentosRequeridos=docsReq;
+      c.estado=estado;
+    }
+    showToast('Convocatoria actualizada correctamente','success');
+  } else {
+    DB.convocatorias.push({
+      id:uid('conv'),
+      nombre,
+      descripcion:desc,
+      monto,
+      cuposTotal:cupos,
+      cuposUsados:0,
+      fechaInicio:inicio,
+      fechaFin:fin,
+      requisitos:reqs,
+      documentosRequeridos:docsReq,
+      estado
+    });
+    showToast('Convocatoria creada exitosamente','success');
+  }
+  closeModal('modal-conv');
+  renderAdminDashboard();
+}
+
+
+function eliminarConv(convId){
+  if(!confirm('¿Estás seguro de eliminar esta convocatoria?')) return;
+  const idx=DB.convocatorias.findIndex(c=>c.id===convId);
+  if(idx>-1){ DB.convocatorias.splice(idx,1); showToast('Convocatoria eliminada','success'); renderAdminDashboard(); }
+}
+
+function confirmarBeneficiarios(){
+  const seleccionados=DB.solicitudes.filter(s=>{
+    const cb=document.getElementById('rank-sel-'+s.id);
+    return cb&&cb.checked&&s.puntaje!==null&&s.estado!=='rechazado';
+  });
+  if(seleccionados.length===0){ showToast('Selecciona al menos un beneficiario evaluado','error'); return; }
+  seleccionados.forEach(s=>{
+    s.estado='aprobado';
+    if(!DB.notificaciones[s.estudianteEmail]) DB.notificaciones[s.estudianteEmail]=[];
+    DB.notificaciones[s.estudianteEmail].unshift({id:uid('n'),titulo:'¡Beca aprobada!',mensaje:`Has sido seleccionado como beneficiario de "${s.convNombre}".`,leida:false,fecha:'Ahora'});
+    // Crear desembolso pendiente si no existe
+    if(!DB.desembolsos.find(d=>d.solId===s.id)){
+      const conv=DB.convocatorias.find(c=>c.id===s.convId);
+      DB.desembolsos.push({id:uid('desem'),solId:s.id,estudianteNombre:s.estudianteNombre,beca:s.convNombre,monto:conv?conv.monto:0,cuenta:'Sin cuenta registrada',txn:null,fecha:null,estado:'pendiente'});
+    }
+  });
+  showToast(`${seleccionados.length} beneficiario(s) confirmados y notificados`,'success');
+  renderAdminRanking();
+}
+
+// ── DESEMBOLSOS ───────────────────────────────────────────────
+function openDesembolsoModal(desembolsoId){
+  const d=DB.desembolsos.find(x=>x.id===desembolsoId);
+  if(!d) return;
+  window._desembolsoId=desembolsoId;
+  document.getElementById('desembolso-nombre').textContent=d.estudianteNombre;
+  document.getElementById('desembolso-beca').textContent=d.beca;
+  document.getElementById('desembolso-monto').textContent=fmt(d.monto);
+  document.getElementById('desembolso-txn').value='';
+  document.getElementById('desembolso-cuenta').value=d.cuenta!=='Sin cuenta registrada'?d.cuenta:'';
+  document.getElementById('desembolso-txn-err').classList.remove('show');
+  document.getElementById('desembolso-fecha').value=hoy();
+  openModal('modal-desembolso');
+}
+
+function confirmarDesembolso(){
+  const txn=document.getElementById('desembolso-txn').value.trim();
+  const fecha=document.getElementById('desembolso-fecha').value;
+  const cuenta=document.getElementById('desembolso-cuenta').value.trim();
+  if(!txn){ showErr('desembolso-txn-err','El número de transacción es obligatorio.'); return; }
+  if(!fecha){ showToast('Selecciona una fecha','error'); return; }
+  const d=DB.desembolsos.find(x=>x.id===window._desembolsoId);
+  if(!d) return;
+  d.txn=txn; d.fecha=fecha; d.cuenta=cuenta||d.cuenta; d.estado='completado';
+  // Actualizar solicitud
+  const sol=DB.solicitudes.find(s=>s.id===d.solId);
+  if(sol){ sol.estado='desembolsado';
+    if(!DB.notificaciones[sol.estudianteEmail]) DB.notificaciones[sol.estudianteEmail]=[];
+    DB.notificaciones[sol.estudianteEmail].unshift({id:uid('n'),titulo:'Beca desembolsada',mensaje:`El pago de tu beca "${d.beca}" fue procesado. N° transacción: ${txn}`,leida:false,fecha:'Ahora'});
+  }
+  closeModal('modal-desembolso');
+  showToast('Desembolso confirmado y registrado como Completado','success');
+  renderTesDashboard(); renderTesDesembolsos();
+}
+
+function verComprobante(desembolsoId){
+  const d=DB.desembolsos.find(x=>x.id===desembolsoId);
+  if(!d){ showToast('Comprobante no encontrado','error'); return; }
+  const win=window.open('','_blank');
+  win.document.write(`
+    <html><head><title>Comprobante de Desembolso</title>
+    <style>body{font-family:Arial,sans-serif;padding:40px;max-width:600px;margin:auto}
+    h1{color:#1E3A8A;border-bottom:2px solid #1E3A8A;padding-bottom:10px}
+    .row{display:flex;justify-content:space-between;padding:10px 0;border-bottom:1px solid #eee}
+    .label{color:#666;font-size:.9rem}.val{font-weight:600}
+    .badge{background:#D1FAE5;color:#065F46;padding:4px 12px;border-radius:20px;font-size:.85rem}
+    </style></head><body>
+    <h1>🎓 Comprobante de Desembolso</h1>
+    <p style="color:#666;margin-bottom:20px">Sistema de Gestión de Becas — ITM</p>
+    <div class="row"><span class="label">Estudiante</span><span class="val">${d.estudianteNombre}</span></div>
+    <div class="row"><span class="label">Beca</span><span class="val">${d.beca}</span></div>
+    <div class="row"><span class="label">Monto desembolsado</span><span class="val" style="color:#10B981">${fmt(d.monto)}</span></div>
+    <div class="row"><span class="label">Cuenta bancaria</span><span class="val">${d.cuenta}</span></div>
+    <div class="row"><span class="label">N° Transacción</span><span class="val">${d.txn}</span></div>
+    <div class="row"><span class="label">Fecha de desembolso</span><span class="val">${d.fecha}</span></div>
+    <div class="row"><span class="label">Estado</span><span class="badge">Completado ✓</span></div>
+    <p style="margin-top:30px;color:#888;font-size:.8rem">Documento generado el ${new Date().toLocaleDateString('es-CO')}. Este comprobante es válido como constancia de pago.</p>
+    </body></html>`);
+}
+
+// ── NOTIFICACIONES ────────────────────────────────────────────
+function showNotifModal(){
+  const notifs=DB.notificaciones[currentUser.email]||[];
+  const cont=document.getElementById('notif-lista');
+  if(cont) cont.innerHTML=notifs.length===0
+    ?'<p style="text-align:center;color:var(--text3);padding:20px">No tienes notificaciones</p>'
+    :notifs.map(n=>`<div style="padding:12px;background:${n.leida?'var(--surface2)':'var(--bg)'};border-radius:10px;font-size:.85rem;border-left:3px solid ${n.leida?'transparent':'var(--accent)'}">
+        <strong>${n.titulo}</strong><p style="color:var(--text2);margin-top:4px">${n.mensaje}</p>
+        <p style="font-size:.75rem;color:var(--text3);margin-top:4px">${n.fecha}</p>
+      </div>`).join('');
+  // Marcar como leídas
+  notifs.forEach(n=>n.leida=true);
+  document.getElementById('notif-count').style.display='none';
+  openModal('modal-notif');
+}
+
+// ─── TOAST ───────────────────────────────────────────────────
+function showToast(msg,type=''){
+  const t=document.getElementById('toast');
+  t.textContent=msg; t.className='toast '+(type||'');
+  t.classList.add('show');
+  setTimeout(()=>t.classList.remove('show'),3500);
+}
+
+// Enter key en login/register
+document.addEventListener('keydown',e=>{
+  if(e.key==='Enter'){
+    if(document.getElementById('view-login').classList.contains('active')) doLogin();
+    if(document.getElementById('view-register').classList.contains('active')) doRegister();
+  }
+});
+</script>
+</body>
+</html>
